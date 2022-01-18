@@ -21,7 +21,7 @@ const syncPost = async (host, port, endPoint, content) =>
 	}).then(res => res.status);
 
 
-async function withContainer(imageName, code, environment = null) {
+async const withContainer = (imageName, code, environment = null) => {
 	// Prepare the data for the container
 	let containerName = buildContainerName(imageName);
 	let envArgs = extractEnvArgs(environment);
@@ -110,7 +110,9 @@ let dockerCmdEval = "";
 const dockerCmd = () => {
 
 	// lazy eval of function
-	if (dockerCmdEval) return dockerCmdEval;
+	if (dockerCmdEval) {
+		return dockerCmdEval;
+	}
 
 	let dockerHost = process.env.DOCKER_HOST || "";
 	// if (!dockerHost) {} TODO try to get it from a whisk.properties file?
@@ -138,12 +140,15 @@ Please verify that it is set for your build/test process.\n
 function dockerBin() {
 	const usrbindocker = "/usr/bin/docker";
 	let found = existsSync(usrbindocker)
-	if (found) return usrbindocker;
-
+	if (found) {
+		return usrbindocker;
+	}
 	const usrlocalbindocker = "/usr/local/bin/docker";
 	found = existsSync(usrlocalbindocker)
-	if (found) return usrlocalbindocker;
-	return null;
+	if (found) {
+		return usrlocalbindocker;
+	}
+	return "";
 }
 
 
