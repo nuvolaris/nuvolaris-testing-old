@@ -13,7 +13,12 @@ class ActionContainer {
 }
 
 const syncPost = async (host, port, endPoint, content) =>
-	await axios.post(`http://${host}:${port}${endPoint}`, content).then(res => 200, err => err.response.status);
+	await axios({
+		method: 'POST',
+		url: `http://${host}:${port}${endPoint}`,
+		data: content,
+		validateStatus: () => true,
+	}).then(res => res.status);
 
 
 async function withContainer(imageName, code, environment = null) {
