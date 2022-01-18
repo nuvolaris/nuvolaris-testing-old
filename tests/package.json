@@ -1,0 +1,15 @@
+{
+  "name": "nuvolaris-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "action-container.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "axios": "^0.24.0",
+    "jest": "^27.4.7"
+  }
+}

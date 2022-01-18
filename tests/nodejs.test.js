@@ -1,32 +1,18 @@
-const isBase64Pattern = new RegExp('^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$');
+const withContainer = require("./action-container").withContainer;
 
-const TestConfig = {
-	code: "",
-	main: "main",
-	enforceEmptyOutputStream: true,
-	enforceEmptyErrorStream: true,
-	hasCodeStub: false,
-	skipTest: false,
+class NodeJsActionContainerTests {
+	constructor(nodejsContainerImageName) {
+		this.nodejsContainerImageName = nodejsContainerImageName;
+	}
+
+	async runWithActionContainer(code, env = null) {
+		await withContainer(this.nodejsContainerImageName, code, env)
+	}
 }
 
-// Runs tests for actions which receive an empty initializer (no source or exec).
-const testNoSourceOrExec = TestConfig
+const isBase64Pattern = new RegExp('^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$');
 
-// Runs tests for actions which receive an empty code initializer (exec with code equal to the empty string).
-const testNoSource = testNoSourceOrExec
-
-/**
- * TODO
-	* Must be defined by the runtime test suites. A typical implementation looks like this:
-	*      withContainer("container-image-name", env)(code)
-	* See [[ActionContainer.withContainer]] for details.
-	*
-	* @param env the environment to pass to the container
-	* @param code the code to initialize with 
-	*/
-const withActionContainer = (env, code) => { }
-
-const initPayload = (code, main = "main", env = null) => {
+function initPayload(code, main = "main", env = null) {
 	let b = false;
 	if (code) {
 		let t = code.trim();
@@ -43,30 +29,17 @@ const initPayload = (code, main = "main", env = null) => {
 	}
 }
 
-// let nodejsContainerImageName = "openwhisk/action-nodejs-v14"
-// let nodejsTestDockerImageName = "nodejs14docker"
-
-class NodeJsActionContainerTests {
-	constructor(nodejsContainerImageName, nodejsTestDockerImageName, isTypeScript = false)
-
-	withActionContainer(env = null, code) {
-		withContainer(this.nodejsContainerImageName, env)(code)
-	}
-}
-
 describe("Nodejs v14 Runtime", () => {
-	it("should handle initialization with no code", () => {
-		console.log("Hello")
 
-		let config = testNoSource
+	it("should handle initialization with no code", async () => {
+		let nodejs = new NodeJsActionContainerTests("openwhisk/action-nodejs-v14");
 
-		let(out, err) = withActionContainer({}, c => {
-			let(initCode, out) = c.init(initPayload("", ""));
-			if (config.hasCodeStub) {
-				expect(initCode).toBe(200)
-			} else {
-				expect(initCode).Not.toBe(200)
-			}
-		})
+		const code = async (actionContainer) => {
+			let status = await actionContainer.init(initPayload("", ""));
+			expect(status).not.toBe(200);
+		};
+
+		await nodejs.runWithActionContainer(code);
 	})
+
 })
