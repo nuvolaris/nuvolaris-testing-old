@@ -4,12 +4,18 @@
   "description": "",
   "main": "action-container.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
     "axios": "^0.24.0",
     "jest": "^27.4.7"
+  },
+  "devDependencies": {
+    "eslint": "^8.7.0",
+    "eslint-config-google": "^0.14.0"
   }
 }
