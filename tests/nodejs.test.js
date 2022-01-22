@@ -74,53 +74,74 @@ describe('Nodejs v14 Runtime', () => {
   });
 
   it('should handle initialization with no code', async () => {
+    let initCode;
     const code = async () => {
       const {status} = await api.init(initPayload('', ''));
-      expect(status).not.toBe(200);
+      initCode = status;
     };
 
     await runWithActionContainer(code);
+
+    expect(initCode).not.toBe(200);
   });
 
   it('should handle initialization with no content', async () => {
+    let initCode; let out;
     const code = async () => {
       const {status, data} = await api.init({});
-      expect(status).not.toBe(200);
-      expect(data).toStrictEqual({error: 'Missing main/no code to execute.'});
+      initCode = status;
+      out = data;
     };
 
     await runWithActionContainer(code);
+
+    expect(initCode).not.toBe(200);
+    expect(out).toStrictEqual({error: 'Missing main/no code to execute.'});
   });
 
-  it('should run and report an error for not returning a json object', () => {
+  it.only('should run and report error for not returning a json', async () => {
+    let initCode; let runCode; let out;
+    const code = async () => {
+      const {status} = await api.init(initPayload(null));
+      initCode = status;
+      const run = api.run(JsObject.empty);
+      runCode = run.status;
+      out = run.data;
+    };
 
+    await runWithActionContainer(code);
+
+    expect(initCode).toBe(200);
+    expect(runCode).not.toBe(200);
+    const expectedResult = {error: 'The action did not return a dictionary.'};
+    expect(out).toStrictEqual(expectedResult);
   });
 
-  it('should fail to initialize a second time', () => {
+  // it('should fail to initialize a second time', () => {
 
-  });
+  // });
 
-  it('should invoke non-standard entry point', () => {
+  // it('should invoke non-standard entry point', () => {
 
-  });
+  // });
 
-  it('should echo arguments and print message to stdout/stderr', () => {
+  // it('should echo arguments and print message to stdout/stderr', () => {
 
-  });
+  // });
 
-  it('should handle unicode in source, input params, logs, and result', () => {
+  // it('should handle unicode in source, input params, logs, and result',()=> {
 
-  });
+  // });
 
-  it('should export environment variables before initialization', () => {
+  // it('should export environment variables before initialization', () => {
 
-  });
+  // });
 
-  it('should confirm expected environment variables', () => {
+  // it('should confirm expected environment variables', () => {
 
-  });
+  // });
 
-  it('should echo a large input', () => {
+  // it('should echo a large input', () => {
 
-  });
+  // });
 });

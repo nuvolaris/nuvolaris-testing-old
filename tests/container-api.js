@@ -36,7 +36,7 @@ class ContainerApi {
   }
 }
 
-// then create an instance of the mock container interface
+// Create an instance of the mock container interface for testing
 const mockContainerApi = (ip, port) => new ContainerApi(
     (value) => syncPost(ip, port, '/init', value),
     (value) => syncPost(ip, port, '/run', value),

@@ -34,18 +34,14 @@ const setupContainer = async (imageName, environment = null) => {
 };
 
 const runCodeInContainer = async (code, name) => {
-  let result = {};
   try {
     await code();
-    // I'm told this is good for the logs.
-    await timer(100);
+    await timer(100); // good for the logs.
     const {stdout, err} = await execDocker(`logs ${name}`);
-    result = {out: stdout, err};
+    return {out: stdout, err};
   } catch {
     return {err: 'error while running code in container.'};
   }
-
-  return result;
 };
 
 const tearDownContainer = async (name) => {
