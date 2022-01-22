@@ -2,52 +2,37 @@ const existsSync = require("fs").existsSync;
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const platform = require("os").platform;
-const axios = require('axios');
-
-class ActionContainer {
-	constructor(init, run, runMultiple) {
-		this.init = init;
-		this.run = run;
-		// this.runMultiple = runMultiple; TODO run multiple
-	}
-}
-
-const syncPost = async (host, port, endPoint, content) =>
-	await axios({
-		method: 'POST',
-		url: `http://${host}:${port}${endPoint}`,
-		data: content,
-		validateStatus: () => true,
-	}).then(res => res.status);
 
 
-async const withContainer = (imageName, code, environment = null) => {
+const setupContainer = async (imageName, environment = null) => {
 	// Prepare the data for the container
 	let containerName = buildContainerName(imageName);
 	let envArgs = extractEnvArgs(environment);
 
 	// Create the container and get its IP address
 	let { ip, port } = await runContainer(imageName, containerName, envArgs);
+	return { containerName, ip, port };
+}
 
-	// then create an instance of the mock container interface
-	const mock = new ActionContainer(
-		(value) => syncPost(ip, port, "/init", value),
-		(value) => syncPost(ip, port, "/run", value),
-		// (values) => concurrentSyncPost(ip, port, "/run", values) TODO concurrent sync post
-	);
+const runCodeInContainer = async (code, name) => {
+	let result = {};
+	try {
+		await code();
+		// I'm told this is good for the logs.
+		await timer(100);
+		let { stdout, err } = await execDockerCmd(`logs ${name}`);
+		result = { out: stdout, err }
+	} catch {
+		return { err: "error while running code in container." };
+	}
 
-	// and finally run the code with it.
-	let result = await runCodeInContainer(code, containerName, mock);
 	return result;
 }
 
-const timer = ms => new Promise(res => setTimeout(res, ms));
-
-const buildContainerName = (imageName) => imageName.toLowerCase().replaceAll(/[^a-z]/g, '') + Math.random();
-
-const extractEnvArgs = (e) => e ? Object.entries(e).map(([k, v]) => `-e ${k}=${v}`).join(' ') : "";
-
-const isDockerForMac = () => platform().toLowerCase().includes('mac') && !process.env.DOCKER_HOST;
+const tearDownContainer = async (name) => {
+	await execDockerCmd(`kill ${name}`);
+	await execDockerCmd(`rm ${name}`);
+}
 
 const runContainer = async (imageName, contName, envArgs) => {
 	const createContainer = async (portFwd) => {
@@ -78,21 +63,13 @@ const runContainer = async (imageName, contName, envArgs) => {
 	return { ip, port };
 }
 
-const runCodeInContainer = async (code, name, ac) => {
-	let result = {};
-	try {
-		await code(ac);
-		// I'm told this is good for the logs.
-		await timer(100);
-		let { stdout, err } = await execDockerCmd(`logs ${name}`);
-		result = { out: stdout, err }
-	} finally {
-		await execDockerCmd(`kill ${name}`);
-		await execDockerCmd(`rm ${name}`);
-	}
+const timer = ms => new Promise(res => setTimeout(res, ms));
 
-	return result;
-}
+const buildContainerName = (imageName) => imageName.toLowerCase().replaceAll(/[^a-z]/g, '') + Math.random();
+
+const extractEnvArgs = (e) => e ? Object.entries(e).map(([k, v]) => `-e ${k}=${v}`).join(' ') : "";
+
+const isDockerForMac = () => platform().toLowerCase().includes('mac') && !process.env.DOCKER_HOST;
 
 // Tying it all together, we have a method that runs docker, waits for
 // completion for some time then returns the exit code, the output stream
@@ -153,5 +130,7 @@ function dockerBin() {
 
 
 module.exports = {
-	withContainer
+	setupContainer,
+	runCodeInContainer,
+	tearDownContainer
 }
