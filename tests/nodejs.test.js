@@ -21,33 +21,8 @@ const setupContainer = require('./action-container').setupContainer;
 const runCodeInContainer = require('./action-container').runCodeInContainer;
 const tearDownContainer = require('./action-container').tearDownContainer;
 const mockContainerApi = require('./container-api').mockContainerApi;
-
-// eslint-disable-next-line max-len
-const isBase64Pattern = new RegExp('^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$');
-
-/**
- * Creates a payload for the initialization of a container
- * @param {function} code code to run in a container
- * @param {string} main name of the main function
- * @param {object} env env variables
- * @return {object} payload with code, main function and env vars
- */
-function initPayload(code, main = 'main', env = null) {
-  let b = false;
-  if (code) {
-    const t = code.trim();
-    b = (t.length > 0) && (t.length % 4 == 0) && isBase64Pattern.test(t);
-  }
-
-  return {
-    value: {
-      code,
-      main,
-      binary: b,
-      env,
-    },
-  };
-}
+const buildConfig = require('./config');
+const {initPayload, checkStreams} = require('./utils');
 
 describe('Nodejs v14 Runtime', () => {
   const nodejs14Image = 'openwhisk/action-nodejs-v14';
@@ -57,10 +32,10 @@ describe('Nodejs v14 Runtime', () => {
   /**
    * Runs code function in container
    * @param {function} code to run in container
-   * @return {object} result of the code
+   * @return {Promise<{out, err}>} promise with the result from the code
    */
-  async function runWithActionContainer(code) {
-    return await runCodeInContainer(code, containerData.name);
+  function runWithActionContainer(code) {
+    return runCodeInContainer(code, containerData.name);
   }
 
   beforeAll(async () => {
@@ -68,10 +43,7 @@ describe('Nodejs v14 Runtime', () => {
     api = mockContainerApi(containerData.ip, containerData.port);
   });
 
-  afterAll(() => {
-    const name = containerData.containerName;
-    return tearDownContainer(name);
-  });
+  afterAll(() => tearDownContainer(containerData.name));
 
   it('should handle initialization with no code', async () => {
     let initCode;
@@ -100,21 +72,42 @@ describe('Nodejs v14 Runtime', () => {
   });
 
   it.only('should run and report error for not returning a json', async () => {
-    let initCode; let runCode; let out;
+    const config = buildConfig({
+      code: `
+      function main(args) {
+        return "not a json object"
+      }
+      `, enforceEmptyErrorStream: false});
+
+    let initCode; let runCode; let output;
     const code = async () => {
-      const {status} = await api.init(initPayload(null));
+      const {status} = await api.init(initPayload(config.code));
       initCode = status;
-      const run = api.run(JsObject.empty);
+      const run = await api.run({});
       runCode = run.status;
-      out = run.data;
+      output = run.data;
     };
 
-    await runWithActionContainer(code);
-
+    const {stdout, stderr} = await runWithActionContainer(code);
     expect(initCode).toBe(200);
     expect(runCode).not.toBe(200);
-    const expectedResult = {error: 'The action did not return a dictionary.'};
-    expect(out).toStrictEqual(expectedResult);
+    const expectRes = {error: 'The action did not return a dictionary.'};
+    expect(output).toStrictEqual(expectRes);
+
+
+    const error = checkStreams(stdout, stderr, (o, e) => {
+      // some runtimes may emit an error message,
+      // or for native runtimes emit the result to stdout
+      let stdoutEmpty = true; let stderrEmpty = true;
+      if (config.enforceEmptyOutputStream) {
+        stdoutEmpty = o.length === 0 || !o.trim();
+      }
+      if (config.enforceEmptyErrorStream) {
+        stderrEmpty = e.length === 0 || !e.trim();
+      }
+      return {stdoutEmpty, stderrEmpty};
+    });
+    expect(error).toBe('');
   });
 
   // it('should fail to initialize a second time', () => {

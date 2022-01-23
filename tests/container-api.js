@@ -43,8 +43,8 @@ const mockContainerApi = (ip, port) => new ContainerApi(
     // (values) => concurrentSyncPost(ip, port, "/run", values) TODO
 );
 
-const syncPost = async (host, port, endPoint, content) =>
-  await axios({
+const syncPost = (host, port, endPoint, content) =>
+  axios({
     method: 'POST',
     url: `http://${host}:${port}${endPoint}`,
     data: content,

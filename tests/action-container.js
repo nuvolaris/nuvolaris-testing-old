@@ -25,20 +25,19 @@ const platform = require('os').platform;
 
 const setupContainer = async (imageName, environment = null) => {
   // Prepare the data for the container
-  const containerName = buildContainerName(imageName);
+  const name = buildContainerName(imageName);
   const envArgs = extractEnvArgs(environment);
 
   // Create the container and get its IP address
-  const {ip, port} = await runContainer(imageName, containerName, envArgs);
-  return {containerName, ip, port};
+  const {ip, port} = await runContainer(imageName, name, envArgs);
+  return {name, ip, port};
 };
 
 const runCodeInContainer = async (code, name) => {
   try {
     await code();
     await timer(100); // good for the logs.
-    const {stdout, err} = await execDocker(`logs ${name}`);
-    return {out: stdout, err};
+    return await execDocker(`logs ${name}`);
   } catch {
     return {err: 'error while running code in container.'};
   }
@@ -101,7 +100,7 @@ const execDocker = async (cmd) => {
   const out = await exec(dockerCmd).then((res) => {
     return {code: 0, ...res};
   }, (err) => {
-    return {code: 1, err: err.message};
+    return {code: 1, ...err};
   });
   return out;
 };
