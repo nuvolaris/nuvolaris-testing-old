@@ -1,0 +1,5 @@
+#- debug:  
+#  msg: "generating template"
+- copy:
+  src: "demo2.txt"
+  dest: "/tmp"

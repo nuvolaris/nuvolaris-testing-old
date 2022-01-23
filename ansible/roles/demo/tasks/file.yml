@@ -1,0 +1,5 @@
+#- debug:  
+#  msg: "generating file"
+- copy:
+  src: "demo1.txt"
+  dest: "/tmp"
