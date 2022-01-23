@@ -38,12 +38,12 @@ describe('Nodejs v14 Runtime', () => {
     return runCodeInContainer(code, containerData.name);
   }
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     containerData = await setupContainer(nodejs14Image);
     api = mockContainerApi(containerData.ip, containerData.port);
   });
 
-  afterAll(() => tearDownContainer(containerData.name));
+  afterEach(() => tearDownContainer(containerData.name));
 
   it('should handle initialization with no code', async () => {
     let initCode;
@@ -71,11 +71,11 @@ describe('Nodejs v14 Runtime', () => {
     expect(out).toStrictEqual({error: 'Missing main/no code to execute.'});
   });
 
-  it.only('should run and report error for not returning a json', async () => {
+  it('should run and report error for not returning a json', async () => {
     const config = buildConfig({
       code: `
       function main(args) {
-        return "not a json object"
+        return "not a json object";
       }
       `, enforceEmptyErrorStream: false});
 
@@ -95,24 +95,57 @@ describe('Nodejs v14 Runtime', () => {
     expect(output).toStrictEqual(expectRes);
 
 
-    const error = checkStreams(stdout, stderr, (o, e) => {
+    const error = checkStreams({stdout, stderr, additionalCheck: (o, e) => {
       // some runtimes may emit an error message,
       // or for native runtimes emit the result to stdout
-      let stdoutEmpty = true; let stderrEmpty = true;
       if (config.enforceEmptyOutputStream) {
+        let stdoutEmpty = true;
         stdoutEmpty = o.length === 0 || !o.trim();
+        if (!stdoutEmpty) {
+          return 'expected stdout to be empty after sentinel filter';
+        }
       }
       if (config.enforceEmptyErrorStream) {
+        let stderrEmpty = true;
         stderrEmpty = e.length === 0 || !e.trim();
+        if (!stderrEmpty) {
+          return 'expected stderr to be empty after sentinel filter';
+        }
       }
-      return {stdoutEmpty, stderrEmpty};
-    });
+      return '';
+    }});
     expect(error).toBe('');
   });
 
-  // it('should fail to initialize a second time', () => {
+  it('should fail to initialize a second time', async () => {
+    const config = buildConfig({
+      code: `
+      function main(args) {
+        return args;
+      }
+      `});
 
-  // });
+    const errorMessage = 'Cannot initialize the action more than once.';
+
+    let status1; let status2; let data2;
+    const code = async () => {
+      const init1 = await api.init(initPayload(config.code));
+      status1 = init1.status;
+      const init2 = await api.init(initPayload(config.code));
+      status2 = init2.status;
+      data2 = init2.data;
+    };
+
+
+    const {stdout, stderr} = await runWithActionContainer(code);
+    expect(status1).toBe(200);
+    expect(status2).not.toBe(200);
+    expect(data2).toStrictEqual({error: errorMessage});
+
+    expect(checkStreams({stdout, stderr, additionalCheck: (o, e) => {
+      return (o + e).includes(errorMessage);
+    }, sentinelCount: 0})).toBe(true);
+  });
 
   // it('should invoke non-standard entry point', () => {
 
