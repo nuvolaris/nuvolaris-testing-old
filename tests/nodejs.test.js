@@ -22,7 +22,7 @@ const runCodeInContainer = require('./action-container').runCodeInContainer;
 const tearDownContainer = require('./action-container').tearDownContainer;
 const mockContainerApi = require('./container-api').mockContainerApi;
 const buildConfig = require('./config');
-const {initPayload, checkStreams} = require('./utils');
+const {initPayload, checkStreams, runPayload} = require('./utils');
 
 describe('Nodejs v14 Runtime', () => {
   const nodejs14Image = 'openwhisk/action-nodejs-v14';
@@ -83,7 +83,7 @@ describe('Nodejs v14 Runtime', () => {
     const code = async () => {
       const {status} = await api.init(initPayload(config.code));
       initCode = status;
-      const run = await api.run({});
+      const run = await api.run(runPayload({}));
       runCode = run.status;
       output = run.data;
     };
@@ -91,6 +91,7 @@ describe('Nodejs v14 Runtime', () => {
     const {stdout, stderr} = await runWithActionContainer(code);
     expect(initCode).toBe(200);
     expect(runCode).not.toBe(200);
+
     const expectRes = {error: 'The action did not return a dictionary.'};
     expect(output).toStrictEqual(expectRes);
 
@@ -164,10 +165,10 @@ describe('Nodejs v14 Runtime', () => {
       const init = await api.init(initPayload(config.code, config.main));
       initCode = init.status;
 
-      const run = await api.run(arg);
+      const run = await api.run(runPayload(arg));
 
       runCode = run.status;
-      out = JSON.parse(run.config.data);
+      out = run.data;
     };
 
     const {stdout, stderr} = await runWithActionContainer(code);
@@ -188,13 +189,76 @@ describe('Nodejs v14 Runtime', () => {
     expect(error).toBe('');
   });
 
-  // it('should echo arguments and print message to stdout/stderr', () => {
+  it('should echo arguments and print message to stdout/stderr', async () => {
+    const config = buildConfig({code: `
+    function main(args) {
+            console.log('hello stdout')
+            console.error('hello stderr')
+            return args
+        }
+    `});
 
-  // });
+    const argss = [
+      {string: 'hello'}, {string: '❄ ☃ ❄'},
+      {numbers: [42, 1]}, {object: {a: 'A'}},
+    ];
 
-  // it('should handle unicode in source, input params, logs, and result',()=> {
+    const expectedRuns = [];
+    let initCode;
+    const code = async () => {
+      const init = await api.init(initPayload(config.code));
+      initCode = init.status;
+      for (let i = 0; i<argss.length; i++) {
+        const run = await api.run(runPayload(argss[i]));
+        const res = {runCode: run.status, out: run.data};
+        expectedRuns.push(res);
+      }
+    };
 
-  // });
+    const {stdout, stderr} = await runWithActionContainer(code);
+
+    expect(initCode).toBe(200);
+    for (let i=0; i<expectedRuns.length; i++) {
+      expect(expectedRuns[i].runCode).toBe(200);
+      expect(expectedRuns[i].out).toStrictEqual(argss[i]);
+    }
+
+    expect(checkStreams({stdout, stderr, additionalCheck: (o, e) =>{
+      let b = o.includes('hello stdout');
+      // some languages may not support printing to stderr
+      if (!config.skipTest) b = b && e.includes('hello stderr');
+      return b;
+    }, sentinelCount: argss.length})).toBe(true);
+  });
+
+  it('should handle unicode in source, input params, logs, and result',
+      async ()=> {
+        const config = buildConfig({
+          code: `
+      function main(args) {
+        var str = args.delimiter + " ☃ " + args.delimiter;
+        console.log(str);
+        return { "winter": str };
+      }`});
+
+        let initCode; let runRes;
+        const code = async () => {
+          const {status} = await api.init(initPayload(config.code));
+          initCode = status;
+          const run = await api.run(runPayload({delimiter: '❄'}));
+          runRes = run.data;
+        };
+
+        const {stdout, stderr} = await runWithActionContainer(code);
+
+        expect(initCode).toBe(200);
+        expect(runRes).toStrictEqual({winter: '❄ ☃ ❄'});
+
+        expect(checkStreams({
+          stdout, stderr,
+          additionalCheck: (o, _) => o.toLowerCase().includes('❄ ☃ ❄')},
+        )).toBe(true);
+      });
 
   // it('should export environment variables before initialization', () => {
 

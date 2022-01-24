@@ -26,6 +26,15 @@ function initPayload(code, main = 'main', env = null) {
 }
 
 /**
+ * wraps args in {value: args}
+ * @param {*} args
+ * @return {*}
+ */
+function runPayload(args) {
+  return {value: args};
+}
+
+/**
  * The action proxies insert this line in the logs
  * at the end of each activation for stdout/stderr.
  *
@@ -69,5 +78,6 @@ function checkStreams({stdout, stderr, additionalCheck, sentinelCount = 1}) {
 
 module.exports = {
   initPayload,
+  runPayload,
   checkStreams,
 };
