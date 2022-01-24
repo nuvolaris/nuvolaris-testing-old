@@ -1,5 +1,4 @@
-#- debug:  
-#  msg: "generating file"
+- debug: msg="generating file"
 - copy:
-  src: "demo1.txt"
-  dest: "/tmp"
+   src: "demo1.txt"
+   dest: "/tmp"

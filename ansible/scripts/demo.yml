@@ -1,4 +1,6 @@
 - name: demo
   hosts: server
+  tasks:
+  - ping:
   roles:
   - demo
