@@ -49,8 +49,6 @@ const syncPost = (host, port, endPoint, content) =>
     url: `http://${host}:${port}${endPoint}`,
     data: content,
     validateStatus: () => true,
-  }).then((res) => {
-    return {status: res.status, data: res.data};
   });
 
 module.exports = {

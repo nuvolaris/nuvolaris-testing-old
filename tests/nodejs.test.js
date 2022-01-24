@@ -147,9 +147,46 @@ describe('Nodejs v14 Runtime', () => {
     }, sentinelCount: 0})).toBe(true);
   });
 
-  // it('should invoke non-standard entry point', () => {
+  it('should invoke non-standard entry point', async () => {
+    const config = buildConfig({
+      code: `
+   function niam(args) {
+     return args;
+    }`, main: 'niam',
+    });
 
-  // });
+    expect(config.main).not.toBe('main');
+
+    const arg = {string: 'hello'};
+    let initCode; let runCode; let out;
+
+    const code = async () =>{
+      const init = await api.init(initPayload(config.code, config.main));
+      initCode = init.status;
+
+      const run = await api.run(arg);
+
+      runCode = run.status;
+      out = JSON.parse(run.config.data);
+    };
+
+    const {stdout, stderr} = await runWithActionContainer(code);
+
+    expect(initCode).toBe(200);
+    expect(runCode).toBe(200);
+    expect(out).toStrictEqual(arg);
+
+    const error = checkStreams({stdout, stderr, additionalCheck: (o, e) => {
+      // some native runtimes will emit the result to stdout
+      const isStdoutEmpty = (o.length === 0 || !o.trim());
+      if (config.enforceEmptyOutputStream && !isStdoutEmpty) {
+        return 'expected stdout to be empty after sentinel filter';
+      }
+      return '';
+    }});
+
+    expect(error).toBe('');
+  });
 
   // it('should echo arguments and print message to stdout/stderr', () => {
 

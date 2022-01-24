@@ -43,7 +43,8 @@ const ACTIVATION_LOG_SENTINEL = 'XXX_THE_END_OF_A_WHISK_ACTIVATION_XXX';
  * @param {function} additionalCheck
  * @param {number} sentinelCount
  * @param {boolean} concurrent
- * @return {{error}} if checks fail an error is returned
+ * @return {*} if checks fail an error is returned,
+ *  otherwise return additionalCheck result
  */
 function checkStreams({stdout, stderr, additionalCheck, sentinelCount = 1}) {
   const outSentinelMatches =
@@ -62,8 +63,7 @@ function checkStreams({stdout, stderr, additionalCheck, sentinelCount = 1}) {
 
   const o = stdout.replaceAll('XXX_THE_END_OF_A_WHISK_ACTIVATION_XXX', '');
   const e = stderr.replaceAll('XXX_THE_END_OF_A_WHISK_ACTIVATION_XXX', '');
-  error = additionalCheck(o, e);
-  return error;
+  return additionalCheck(o, e);
 }
 
 
