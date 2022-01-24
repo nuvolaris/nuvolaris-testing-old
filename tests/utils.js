@@ -26,12 +26,13 @@ function initPayload(code, main = 'main', env = null) {
 }
 
 /**
- * wraps args in {value: args}
- * @param {*} args
- * @return {*}
+ * wraps args in {value: args, ...other}
+ * @param {{}} args
+ * @param {{}} other
+ * @return {{args, other}}
  */
-function runPayload(args) {
-  return {value: args};
+function runPayload(args, other) {
+  return {value: args, ...other};
 }
 
 /**

@@ -23,7 +23,7 @@ const exec = util.promisify(require('child_process').exec);
 const platform = require('os').platform;
 
 
-const setupContainer = async (imageName, environment = null) => {
+const setupContainer = async (imageName, environment = {}) => {
   // Prepare the data for the container
   const name = buildContainerName(imageName);
   const envArgs = extractEnvArgs(environment);
