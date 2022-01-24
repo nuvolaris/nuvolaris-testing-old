@@ -1,0 +1,5 @@
+- name: vms
+  hosts: server
+  tasks:
+  roles:
+  - kvm
