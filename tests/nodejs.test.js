@@ -266,7 +266,7 @@ describe('Nodejs Runtime', () => {
         };
 
         const {stdout, stderr} =
-      await runWithActionContainer(code, container.name);
+          await runWithActionContainer(code, container.name);
 
         expect(initCode).toBe(200);
         expect(runRes).toStrictEqual({winter: '❄ ☃ ❄'});
@@ -329,8 +329,31 @@ describe('Nodejs Runtime', () => {
         }
       });
 
-  it('should echo a large input', () => {
+  it('should echo a large input', async () => {
+    const config = buildConfig({
+      code: `
+      function main(args) {
+        return args
+      }`,
+    });
+    if (config.skipTest) {
+      throw new Error('Test pending');
+    } else {
+      const arg = {arg: 'a'.repeat(1048561)};
 
+      let initCode; let out;
+      const code = async () => {
+        const init = await api.init(initPayload(config.code, config.main));
+        initCode = init.status;
+
+        const run = await api.run(runPayload(arg));
+        out = run.data;
+      };
+
+      await runWithActionContainer(code);
+      expect(initCode).toBe(200);
+      expect(out).toStrictEqual(arg);
+    }
   });
 });
 
