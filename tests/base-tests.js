@@ -2,10 +2,9 @@ const setupContainer = require('./action-container').setupContainer;
 const runCodeInContainer = require('./action-container').runCodeInContainer;
 const tearDownContainer = require('./action-container').tearDownContainer;
 const mockContainerApi = require('./container-api').mockContainerApi;
-const buildConfig = require('./config');
 const {initPayload, checkStreams, runPayload} = require('./utils');
 
-const baseTests = (imageName) => {
+const baseTests = (imageName, configuration) => {
   let container;
   let api;
 
@@ -43,13 +42,7 @@ const baseTests = (imageName) => {
   });
 
   it('should run and report error for not returning a json', async () => {
-    const config = buildConfig({
-      code: `
-        function main(args) {
-          return "not a json object";
-        }
-        `, enforceEmptyErrorStream: false,
-    });
+    const config = configuration.testNotReturningJson;
 
     let initCode; let runCode; let output;
     const code = async () => {
@@ -66,7 +59,6 @@ const baseTests = (imageName) => {
 
     const expectRes = {error: 'The action did not return a dictionary.'};
     expect(output).toStrictEqual(expectRes);
-
 
     const error = checkStreams({
       stdout, stderr, additionalCheck: (o, e) => {
@@ -93,12 +85,7 @@ const baseTests = (imageName) => {
   });
 
   it('should fail to initialize a second time', async () => {
-    const config = buildConfig({
-      code: `
-        function main(args) {
-          return args;
-        }
-        `});
+    const config = configuration.testInitCannotBeCalledMoreThanOnce;
 
     const errorMessage = 'Cannot initialize the action more than once.';
 
@@ -110,7 +97,6 @@ const baseTests = (imageName) => {
       status2 = init2.status;
       data2 = init2.data;
     };
-
 
     const {stdout, stderr} =
       await runCodeInContainer(code, container.name);
@@ -126,12 +112,7 @@ const baseTests = (imageName) => {
   });
 
   it('should invoke non-standard entry point', async () => {
-    const config = buildConfig({
-      code: `
-      function niam(args) {
-        return args;
-      }`, main: 'niam',
-    });
+    const config = configuration.testEntryPointOtherThanMain;
 
     expect(config.main).not.toBe('main');
 
@@ -170,14 +151,7 @@ const baseTests = (imageName) => {
   });
 
   it('should echo arguments and print message to stdout / stderr', async () => {
-    const config = buildConfig({
-      code: `
-      function main(args) {
-              console.log('hello stdout')
-              console.error('hello stderr')
-              return args
-          }
-      `});
+    const config = configuration.testEcho;
 
     const argss = [
       {string: 'hello'}, {string: '❄ ☃ ❄'},
@@ -217,13 +191,7 @@ const baseTests = (imageName) => {
 
   it('should handle unicode in source, input params, logs, and result',
       async () => {
-        const config = buildConfig({
-          code: `
-        function main(args) {
-          var str = args.delimiter + " ☃ " + args.delimiter;
-          console.log(str);
-          return { "winter": str };
-        }`});
+        const config = configuration.testUnicode;
 
         let initCode; let runRes;
         const code = async () => {
@@ -248,16 +216,7 @@ const baseTests = (imageName) => {
 
   it('should export environment variables before initialization',
       async () => {
-        const config = buildConfig({
-          code: `
-            const envargs = {
-              "SOME_VAR": process.env.SOME_VAR,
-              "ANOTHER_VAR": process.env.ANOTHER_VAR
-              }
-              function main(args) {
-                  return envargs
-              }`,
-        });
+        const config = configuration.testEnvParameters;
 
         if (config.skipTest) {
           throw new Error('Test pending');
@@ -298,12 +257,7 @@ const baseTests = (imageName) => {
       });
 
   it('should echo a large input', async () => {
-    const config = buildConfig({
-      code: `
-        function main(args) {
-          return args
-        }`,
-    });
+    const config = configuration.testLargeInput;
     if (config.skipTest) {
       throw new Error('Test pending');
     } else {
@@ -325,25 +279,11 @@ const baseTests = (imageName) => {
   });
 };
 
-const baseTestsWithEnv = (imageName) => {
+const baseTestsWithEnv = (imageName, configuration) => {
   afterEach(() => tearDownContainer(containerName));
 
   it('should confirm expected environment variables', async () => {
-    const config = buildConfig({
-      code: `
-  function main(args) {
-      return {
-        "api_host": process.env['__OW_API_HOST'],
-        "api_key": process.env['__OW_API_KEY'],
-        "namespace": process.env['__OW_NAMESPACE'],
-        "action_name": process.env['__OW_ACTION_NAME'],
-        "action_version": process.env['__OW_ACTION_VERSION'],
-        "activation_id": process.env['__OW_ACTIVATION_ID'],
-        "deadline": process.env['__OW_DEADLINE']
-      }
-  }
-  `,
-    });
+    const config = configuration.testEnv;
 
     const __OW_API_HOST = 'xyz';
     // the api host is sent as a docker run environment parameter
