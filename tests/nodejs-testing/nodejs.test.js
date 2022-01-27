@@ -21,10 +21,10 @@
 const {baseTests, baseTestsWithEnv} = require('../base-tests');
 const configuration = require('./base-configuration');
 
-const nodejs14Image = 'openwhisk/action-nodejs-v14';
-
+const nodejsImage = 'openwhisk/action-nodejs-v14';
 const baseTestsMsg = 'NodeJS 14 Runtime Base Tests';
-describe.each([[nodejs14Image, configuration]])(baseTestsMsg, baseTests);
+
+describe.each([[nodejsImage, configuration]])(baseTestsMsg, baseTests);
 
 const envTestMsg = 'Nodejs Runtime with Environment Variables';
-describe.each([[nodejs14Image, configuration]])(envTestMsg, baseTestsWithEnv);
+describe.each([[nodejsImage, configuration]])(envTestMsg, baseTestsWithEnv);
