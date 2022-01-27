@@ -18,3 +18,5 @@
 .*-version
 ansible/inventory/*
 parthenon/
+
+node_modules/
