@@ -1,0 +1,11 @@
+- name: cluster directory
+  file: 
+   path: /var/lib/libvirt/{{cluster}}
+   state: directory
+   mode: 0755
+- name: download base image
+  get_url:
+   url: https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+   dest: /var/lib/libvirt/{{cluster}}/base.img
+#- name: copy and resize image
+#- name: create bootdir

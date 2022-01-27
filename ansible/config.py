@@ -5,15 +5,16 @@ import socket
 import argparse
 import os.path
 
-def host2entry(host):
-    return f"{host} name={host}"
+subnet = "10.0.0"
+subnet_mac = "52:54:10:00:00"
 
-def inventory(server):
+def inventory(cluster, server, count, disk, mem, cpu):
   hosts = "[server]\n"
-  hosts += host2entry(server)
-  #hosts += "[nodes]\n"
-  #for host in nodes[1:]:
-  #  hosts += host2entry(host)
+  hosts += f"{server} cluster={cluster} subnet={subnet} subnet_mac={subnet_mac} nodes_count={count}\n"
+  hosts += "[nodes]\n"
+  for n in range(count):
+    cpu1 = 2 if n == 0 and cpu == 1 else cpu
+    hosts += f"{subnet}.{10+n} hostname={cluster}{n} macaddr={subnet_mac}:{10+n} disk={disk} mem={mem} cpu={cpu1}\n"
   return hosts
 
 def write_file(filename, content):
@@ -28,9 +29,17 @@ def write_file(filename, content):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser("configure")
-  parser.add_argument("cluster", help="<cluster>")
-  parser.add_argument("server", help="<hostname>")
+  parser.add_argument("cluster", help="name of cluster")
+  parser.add_argument("server", help="hostname of erver")
+  parser.add_argument("count", type=int, help="number of nodes")
+  parser.add_argument("disk", type=int, help="disk size in gigabytes")
+  parser.add_argument("mem", type=int, help="memory size in gigabytes")
+  parser.add_argument("cpu", type=int, help="number of virtual cpu per node")
+
   args = parser.parse_args()
   print("cluster", args.cluster)
   print("server", args.server)
-  write_file(f"inventory/{args.cluster}/hosts", inventory(args.server))
+  print("count", args.count)
+
+  write_file(f"inventory/{args.cluster}/hosts", 
+    inventory(args.cluster, args.server, args.count, args.disk, args.mem, args.cpu))

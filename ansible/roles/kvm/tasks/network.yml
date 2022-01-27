@@ -1,0 +1,18 @@
+- debug: msg='{{ lookup("template", "network.xml") }}'
+- name: libvirt define network
+  community.libvirt.virt_net:
+    command: define
+    name: '{{cluster}}' 
+    xml: '{{ lookup("template", "network.xml") }}'
+- name: libvirt create network
+  community.libvirt.virt_net:
+    command: create
+    name: '{{cluster}}'
+- name: libvirt enable network
+  community.libvirt.virt_net:
+    name: '{{cluster}}'
+    state: active
+- name: libvirt autostart network
+  community.libvirt.virt_net:
+    name: '{{cluster}}'
+    autostart: yes

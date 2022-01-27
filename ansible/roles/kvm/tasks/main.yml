@@ -1,1 +1,3 @@
-- include_tasks: prepare.yml
+#- include_tasks: prereq.yml
+#- include_tasks: network.yml
+- include_tasks: images.yml
