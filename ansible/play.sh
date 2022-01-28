@@ -16,4 +16,9 @@ test -f inventory/id_rsa.pub || die "please put the public for the main server i
 test -d "inventory/$INV" || die "please configure a cluster with config.py"
 test -f "scripts/$SCRIPT.yml" || die "please pick one yml from ./scripts (w/.yml)"
 
-ansible-playbook --private-key=inventory/id_rsa -i inventory/$INV  "$@" "scripts/${SCRIPT##.yml}.yml"
+ansible-playbook \
+  --private-key=inventory/id_rsa \
+  -i inventory/$INV \
+  -e @vars.yaml \
+  "$@" \
+  "scripts/${SCRIPT##.yml}.yml"

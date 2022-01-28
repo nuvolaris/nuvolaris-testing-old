@@ -1,0 +1,3 @@
+- set_fact:
+    hostname: "{{hostvars[item].hostname}}"
+- debug: msg="{{item}} {{hostname}}"

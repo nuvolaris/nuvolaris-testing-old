@@ -1,11 +1,24 @@
-- name: cluster directory
-  file: 
-   path: /var/lib/libvirt/{{cluster}}
-   state: directory
-   mode: 0755
-- name: download base image
-  get_url:
-   url: https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
-   dest: /var/lib/libvirt/{{cluster}}/base.img
-#- name: copy and resize image
-#- name: create bootdir
+- set_fact:
+   host: "{{item}}"
+   id: "{{hostvars[item].id}}"
+   hostname: "{{hostvars[item].hostname}}"
+   disk_size: "{{hostvars[item].disk_size}}"
+   #mem_size: "{{hostvars[item].mem_size}}"
+   #mac_addr: "{{hostvars[item].mac_addr}}"
+   #vcpu_num: "{{hostvars[item].vcpu_num}}"
+  
+
+- name: copy and resize image
+  shell: >
+    cp {{virt_dir}}/{{cluster}}/base.img {{virt_dir}}/{{cluster}}/{{cluster}}{{id}}.img ;
+    qemu-img resize {{virt_dir}}/{{cluster}}/{{cluster}}{{id}}.img {{disk_size}}G
+  args:
+     creates: '{{virt_dir}}/{{cluster}}/{{cluster}}{{id}}.img'
+
+- name: generate cloud-init
+  template:
+   src: "{{cluster_type}}.yml"
+   dest: "{{virt_dir}}/{{cluster}}/{{cluster}}{{id}}.yml"
+- name: build boot iso
+  shell: >
+     cloud-localds "{{virt_dir}}/{{cluster}}/{{cluster}}{{id}}.iso" "{{virt_dir}}/{{cluster}}/{{cluster}}{{id}}.yml"

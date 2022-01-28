@@ -2,12 +2,14 @@
   apt: 
     update_cache: yes 
     autoremove: yes
+
 - name: apt-get upgrade
   apt:
     name: '*'
     state: latest
     force_apt_get: true
-- name: install prerequisites
+
+- name: install ubuntu packages
   apt: name={{item}} 
   with_items:
     - software-properties-common
@@ -22,13 +24,26 @@
     - libvirt-dev
     - libvirt-daemon-system
     - dnsmasq
+
 - name: install python libraries
   pip: state=present name={{item}}
   with_items:
      - libvirt-python
 
-- ansible.posix.sysctl:
+- name: enable forwarding
+  ansible.posix.sysctl:
     name: net.ipv4.ip_forward
     value: '1'
     state: present
     reload: yes
+
+- name: cluster directory
+  file: 
+   path: "{{virt_dir}}/{{cluster}}"
+   state: directory
+   mode: 0755
+
+- name: download base image
+  get_url:
+   url: '{{image_url}}'
+   dest: "{{virt_dir}}/{{cluster}}/base.img"

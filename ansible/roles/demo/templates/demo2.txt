@@ -1,1 +1,1 @@
-name: {{name}}
+name: {{inventory_hostname}}

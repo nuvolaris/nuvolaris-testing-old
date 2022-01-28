@@ -1,2 +1,4 @@
 - include_tasks: file.yml 
-- include_tasks: template.yml 
+- include_tasks: template.yml
+- include_tasks: debug.yml
+  loop: "{{groups['nodes']}}"

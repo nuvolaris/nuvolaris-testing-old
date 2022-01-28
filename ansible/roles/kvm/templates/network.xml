@@ -11,8 +11,8 @@
     <ip address='{{subnet}}.1' netmask='255.255.255.0'>
       <dhcp>
         <range start='{{subnet}}.10' end='{{subnet}}.99' />
-        {% for ip in groups['nodes'] %}
-        <host mac='{{ hostvars[ip].macaddr }}' name='{{ hostvars[ip].hostname }}' ip='{{ip}}'/>
+        {% for host in groups['nodes'] %}
+        <host mac='{{ hostvars[host].mac_addr }}' name='{{ hostvars[host].hostname }}' ip='{{host}}'/>
         {% endfor %}
       </dhcp>
     </ip>
