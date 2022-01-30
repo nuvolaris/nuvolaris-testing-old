@@ -1,5 +1,5 @@
-- debug: 
-    msg: '{{ lookup("template", "network.xml") }}'
+#- debug: 
+#    msg: '{{ lookup("template", "network.xml") }}'
 - name: libvirt define network
   community.libvirt.virt_net:
     command: define

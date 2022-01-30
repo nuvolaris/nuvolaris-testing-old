@@ -1,0 +1,40 @@
+- set_fact:
+    host: "{{item}}"
+    id: "{{hostvars[item].id}}"
+    prefix: "{{virt_dir}}/{{cluster}}/{{cluster}}{{hostvars[item].id}}"
+    hostname: "{{hostvars[item].hostname}}"
+    disk_size: "{{hostvars[item].disk_size}}"
+    mem_size: "{{hostvars[item].mem_size}}"
+    mac_addr: "{{hostvars[item].mac_addr}}"
+    vcpu_num: "{{hostvars[item].vcpu_num}}"
+  
+- name: copy and resize image
+  shell: >
+    cp {{virt_dir}}/{{cluster}}/base.img {{prefix}}.img ;
+    qemu-img resize {{prefix}}.img {{disk_size}}G
+  args:
+    creates: '{{prefix}}.img'
+
+- name: generate user-data (cloud-init)
+  template:
+    src: "{{cluster_type}}.yml"
+    dest: "{{prefix}}.yml"
+
+- name: generate meta-data (hostname)
+  template:
+    src: "meta-data.txt"
+    dest: "{{prefix}}.txt"
+
+- name: generate config (libvirt xml)
+  template:
+    src: "vm.xml"
+    dest: "{{prefix}}.xml"
+
+- name: build boot iso
+  shell: >
+    cloud-localds "{{prefix}}.iso" "{{prefix}}.yml" "{{prefix}}.txt"
+
+- name: libvirt define vm
+  community.libvirt.virt:
+    command: define
+    xml: '{{ lookup("template", "vm.xml") }}'

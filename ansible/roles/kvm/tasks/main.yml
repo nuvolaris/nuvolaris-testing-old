@@ -1,4 +1,7 @@
+- include_tasks: clean.yml
+  tags: ["clean","shutdown"]
+  loop: "{{groups['nodes']}}"
 - include_tasks: prereq.yml
 - include_tasks: network.yml
-- include_tasks: images.yml
+- include_tasks: vms.yml
   loop: "{{groups['nodes']}}"

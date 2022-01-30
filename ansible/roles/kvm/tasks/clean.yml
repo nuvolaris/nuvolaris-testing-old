@@ -1,0 +1,23 @@
+- set_fact:
+   host: "{{item}}"
+   id: "{{hostvars[item].id}}"
+  tags: ["clean", "shutdown"]
+- name: libvirt destroy vm
+  community.libvirt.virt:
+    command: destroy
+    name: "{{cluster}}{{id}}"
+  tags: ["clean", "shutdown"]
+  ignore_errors: yes
+- name: libvirt undefine vm
+  community.libvirt.virt:
+    command: undefine
+    name: "{{cluster}}{{id}}"
+  ignore_errors: yes
+  tags: ["clean", "shutdown"]
+- name: remove
+  shell: >
+      for ext in img yml txt iso xml ;
+      do rm -v "{{virt_dir}}/{{cluster}}/{{cluster}}{{id}}.$ext" ;
+      done
+  ignore_errors: yes
+  tags: clean

@@ -1,12 +1,36 @@
 #!/usr/bin/env python
 
+subnet = "10.0.0"
+subnet_mac = "52:54:10:00:00"
+virt_dir = "/var/lib/libvirt"
+
+# ubuntu 16.04
+#image_url = "https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img"
+
+# ubuntu
+image_url = "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64-disk-kvm.img"
+
+# cloud-init to build which kind of cluster
+cluster_type = "microk8s"
+
+# plain cluster - just set the sshkey...
+# cluster_type = "plain"
+
 import sys
 import socket
 import argparse
 import os.path
+import base64
 
-subnet = "10.0.0"
-subnet_mac = "52:54:10:00:00"
+def header():
+  with open("inventory/id_rsa.pub", "r") as f:
+    ssh_authorized_key = f.read()
+  return f"""[all:vars]
+virt_dir={virt_dir}
+image_url={image_url}
+cluster_type={cluster_type}
+ssh_authorized_key={ssh_authorized_key}
+"""
 
 def inventory(cluster, server, count, disk, mem, cpu):
   hosts = "[server]\n"
@@ -37,9 +61,5 @@ if __name__ == "__main__":
   parser.add_argument("cpu", type=int, help="number of virtual cpu per node of each node")
 
   args = parser.parse_args()
-  print("cluster", args.cluster)
-  print("server", args.server)
-  print("count", args.count)
-
   write_file(f"inventory/{args.cluster}/hosts", 
-    inventory(args.cluster, args.server, args.count, args.disk, args.mem, args.cpu))
+    header() + inventory(args.cluster, args.server, args.count, args.disk, args.mem, args.cpu))

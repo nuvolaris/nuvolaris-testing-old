@@ -1,5 +1,5 @@
-virt_dir: /var/lib/libvirt
-image_url: https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
-cluster_type: microk8s
+#virt_dir: /var/lib/libvirt
+#image_url: https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+#cluster_type: microk8s
 #disk_size: 20
 #hostname: microk8s0
