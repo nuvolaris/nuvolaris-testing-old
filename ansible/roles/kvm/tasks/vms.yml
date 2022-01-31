@@ -10,7 +10,7 @@
   
 - name: copy and resize image
   shell: >
-    cp {{virt_dir}}/{{cluster}}/base.img {{prefix}}.img ;
+    cp {{virt_dir}}/{{base_image}} {{prefix}}.img ;
     qemu-img resize {{prefix}}.img {{disk_size}}G
   args:
     creates: '{{prefix}}.img'
@@ -25,16 +25,44 @@
     src: "meta-data.txt"
     dest: "{{prefix}}.txt"
 
-- name: generate config (libvirt xml)
-  template:
-    src: "vm.xml"
-    dest: "{{prefix}}.xml"
-
 - name: build boot iso
   shell: >
     cloud-localds "{{prefix}}.iso" "{{prefix}}.yml" "{{prefix}}.txt"
 
+- name: libvirt udefine vm
+  community.libvirt.virt:
+    command: undefine
+    name: "{{hostname}}"
+  ignore_errors: true
+
+- name: create vm definition
+  shell: > 
+    virt-install 
+    --name {{hostname}}
+    --ram $(expr {{mem_size}} \* 1024) 
+    --vcpu {{vcpu_num}}
+    --disk path={{prefix}}.img 
+    --disk path={{prefix}}.iso,device=cdrom 
+    --os-type linux
+    --os-variant {{os_variant}}
+    --network bridge=virbr1,mac={{mac_addr}} 
+    --graphics none 
+    --console pty,target_type=serial
+    --print-xml
+  register: vm_xml
+
+- name: write vm xml
+  copy:
+    dest: '{{prefix}}.xml'
+    content: '{{vm_xml.stdout}}'
+
 - name: libvirt define vm
   community.libvirt.virt:
     command: define
-    xml: '{{ lookup("template", "vm.xml") }}'
+    xml: '{{vm_xml.stdout}}'
+    autostart: yes
+
+- name: start vm
+  community.libvirt.virt:
+    command: start
+    name: "{{hostname}}"

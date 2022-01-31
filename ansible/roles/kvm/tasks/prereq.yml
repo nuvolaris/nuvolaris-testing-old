@@ -23,8 +23,8 @@
     - qemu-kvm 
     - libvirt-dev
     - libvirt-daemon-system
+    - virtinst
     - dnsmasq
-
 - name: install python libraries
   pip: state=present name={{item}}
   with_items:
@@ -46,4 +46,4 @@
 - name: download base image
   get_url:
    url: '{{image_url}}'
-   dest: "{{virt_dir}}/{{cluster}}/base.img"
+   dest: "{{virt_dir}}/{{base_image}}"

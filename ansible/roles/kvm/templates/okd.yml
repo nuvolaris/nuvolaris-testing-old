@@ -1,0 +1,10 @@
+#cloud-config
+chpasswd:
+  list: |
+     root:passw0rd
+  expire: False
+ssh_pwauth: True
+ssh_authorized_keys:
+  - {{ssh_authorized_key}}
+bootcmd:
+  - echo "set ssh key for okd"

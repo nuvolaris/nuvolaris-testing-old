@@ -1,20 +1,22 @@
 #cloud-config
+
+# uncommend this only for debugging
+password: passw0rd
+chpasswd: { expire: False }
+
+# initialize
 apt_update: true
 apt_upgrade: true
 package_update: true
 package_upgrade: true
 package_reboot_if_required: false
+ssh_pwauth: True
+bootcmd:
+- echo "boot $(uname -a) complete"
 
 users:
  # uncomment this ONLY for debugging purposes and NEVER leave this uncommented in production
  - name: root
-   lock-passwd: false
-   passwd: $1$SaltSalt$YhgRYajLPrYevs14poKBQ0
-   ssh_authorized_keys:
-    - {{ssh_authorized_key}}
- - name: ubuntu
-   lock-passwd: false
-   passwd: $1$SaltSalt$YhgRYajLPrYevs14poKBQ0
    ssh_authorized_keys:
     - {{ssh_authorized_key}}
  - name: nuvolaris
@@ -28,6 +30,13 @@ runcmd:
  - ufw allow in on cni0 && sudo ufw allow out on cni0
  - ufw default allow routed
  - microk8s start
+{% if hostvars[inventory_hostname].id == '0' %}
+ - microk8s enable dns storage ingress
+ - microk8s add-node -t "{{kube_token}}" -l 600
+{% else %}
+ - | 
+   while ! microk8s join "{{kube_master}}:25000/{{kube_token}}"
+   do echo retrying to join... ; sleep 10
+   done
+{% endif %}
  - microk8s status -w
-bootcmd:
-- echo "created"
