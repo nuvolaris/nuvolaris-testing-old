@@ -32,7 +32,9 @@ header:
     - '**/target/**'
     - '**/openwhisk/**'
     - '**/openwhisk-*/**'
-    - '**/parthenon/**'
+    - '**/misc/**'
+    - '**/_*'
+    - '**/ansible/inventory/**'
  
 dependency:
   files:
