@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-
 {
 	"folders": [
 		{
@@ -24,7 +23,15 @@
 	],
 	"settings": {
 		"workbench.colorCustomizations": {
-			"activityBar.background": "#b1960a"
-		}
+			"activityBar.background": "#b1960a",
+			"titleBar.activeBackground": "#b1960a",
+			"titleBar.activeForeground": "#b1960a"
+		},
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": true
+		},
+		"eslint.validate": [
+			"javascript"
+		]
 	}
 }
