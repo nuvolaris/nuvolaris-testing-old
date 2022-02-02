@@ -33,6 +33,7 @@
     - apt-transport-https 
     - ca-certificates
     - curl
+    - iptables-persistent
     - python3-pip
     - python3-dev
     - python3-lxml
@@ -42,6 +43,7 @@
     - libvirt-daemon-system
     - virtinst
     - dnsmasq
+    - ufw
 - name: install python libraries
   pip: state=present name={{item}}
   with_items:

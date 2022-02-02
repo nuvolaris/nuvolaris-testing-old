@@ -26,16 +26,19 @@ params = {
      "image_url": "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img",
      "os_variant": "ubuntu20.04",
      "base_image": "ubuntu-20.04",
+     "kube_port": "16443",
   }, 
   "okd": {
     "image_url": "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/35.20220103.3.0/x86_64/fedora-coreos-35.20220103.3.0-qemu.x86_64.qcow2.xz",
     "os_variant": "fedora-unknown",
     "base_image": "fedora-coreos35",
+     "kube_port": "6443",
   },
   "k3s": {
     "image_url": "https://download.rockylinux.org/pub/rocky/8.5/images/Rocky-8-GenericCloud-8.5-20211114.2.x86_64.qcow2",
     "os_variant": "rhel8-unknown",
     "base_image": "rocky-8.5",
+    "kube_port": "6443",
   }
 }
 
@@ -47,11 +50,14 @@ import base64
 import random
 import string
 
-def header(cluster_type):
+def header(cluster, cluster_type):
   # geneate random token to join kubernetes
   kube_token = ''.join(random.choices(string.hexdigits[:16], k=32))
   with open("inventory/id_rsa.pub", "r") as f:
     ssh_authorized_key = f.read()
+  with open("inventory/id_rsa", "r") as f:
+    b = f.read().encode()
+    ssh_privkey_b64 = base64.b64encode(b).decode()
   return f"""[all:vars]
 virt_dir={virt_dir}
 image_url={params[cluster_type]['image_url']}
@@ -59,8 +65,11 @@ os_variant={params[cluster_type]['os_variant']}
 base_image={params[cluster_type]['base_image']}
 cluster_type={cluster_type}
 ssh_authorized_key={ssh_authorized_key}
+ssh_privkey_b64={ssh_privkey_b64}
 kube_master={subnet}.10
+kube_port={params[cluster_type]['kube_port']}
 kube_token={kube_token}
+kube_config={os.getcwd()}/kubeconfig/{cluster}/kubeconfig
 """
 
 def inventory(cluster, server, count, disk, mem, cpu):
@@ -94,4 +103,4 @@ if __name__ == "__main__":
 
   args = parser.parse_args()
   write_file(f"inventory/{args.cluster}/hosts", 
-    header(args.type) + inventory(args.cluster, args.server, args.count, args.disk, args.mem, args.cpu))
+    header(args.cluster, args.type) + inventory(args.cluster, args.server, args.count, args.disk, args.mem, args.cpu))

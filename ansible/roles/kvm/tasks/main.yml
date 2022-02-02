@@ -22,3 +22,8 @@
 - include_tasks: network.yml
 - include_tasks: vms.yml
   loop: "{{groups['nodes']}}"
+- include_tasks: 
+   file: expose.yml
+   apply:
+    tags: expose
+  tags: expose

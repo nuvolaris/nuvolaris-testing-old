@@ -19,6 +19,7 @@ version: '3'
 
 tasks:
   setup:
+    - ansible-galaxy collection install community.general
     - ansible-galaxy collection install community.libvirt
     - ansible-galaxy collection install ansible.posix
     

@@ -17,6 +17,7 @@
 #
 .*-version
 ansible/inventory/*
+ansible/kubeconfig/*
 node_modules/
 misc/
 _*
