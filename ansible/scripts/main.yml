@@ -17,6 +17,6 @@
 #
 - name: vms
   hosts: server
-  tasks:
+  become: yes
   roles:
-  - kvm
+    - kvm

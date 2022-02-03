@@ -15,8 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+- file: path=/var/lib/apt/lists/ state=directory
 - name: apt-get update 
-  apt: 
+  apt:
     update_cache: yes 
     autoremove: yes
 
@@ -38,9 +39,11 @@
     - python3-dev
     - python3-lxml
     - pkg-config
-    - qemu-kvm 
+    - qemu-kvm
+    - qemu-utils
     - libvirt-dev
     - libvirt-daemon-system
+    - cloud-image-utils
     - virtinst
     - dnsmasq
     - ufw

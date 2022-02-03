@@ -1,3 +1,4 @@
+#cloud-config
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,11 +16,9 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-#cloud-config
-
 # uncommend this only for debugging
-password: passw0rd
-chpasswd: { expire: False }
+#password: passw0rd
+#chpasswd: { expire: False }
 
 # initialize
 apt_update: true
@@ -32,7 +31,6 @@ bootcmd:
 - echo "boot $(uname -a) complete"
 
 users:
- # uncomment this ONLY for debugging purposes and NEVER leave this uncommented in production
  - name: root
    ssh_authorized_keys:
     - {{ssh_authorized_key}}
@@ -46,11 +44,13 @@ runcmd:
  - snap install microk8s --classic
  - ufw allow in on cni0 && sudo ufw allow out on cni0
  - ufw default allow routed
- - microk8s start
 {% if hostvars[inventory_hostname].id == '0' %}
+ - sed -i -e '/^DNS.5 /a DNS.6 = {{inventory_hostname}}' /var/snap/microk8s/current/certs/csr.conf.template
+ - microk8s start
  - microk8s enable dns storage ingress
  - microk8s add-node -t "{{kube_token}}" -l 600
 {% else %}
+ - microk8s start
  - | 
    while ! microk8s join "{{kube_master}}:25000/{{kube_token}}"
    do echo retrying to join... ; sleep 10

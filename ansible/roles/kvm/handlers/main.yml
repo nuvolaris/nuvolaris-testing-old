@@ -1,0 +1,4 @@
+- name: daemon reload
+  shell: systemctl daemon-reload
+- name: restart haproxy
+  service: name=haproxy state=restarted
