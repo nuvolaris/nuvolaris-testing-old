@@ -48,7 +48,7 @@ ssh-copy-id -i inventory/id_rsa root@test.server
 # 4 install everything
 ./play.sh m8s
 # 5 check everything works
-kubectl --kubeconfig kubeconfig get nodes
+kubectl --kubeconfig kubeconfig/m8s/kubeconfig get nodes
 ```
 # How to destroy the cluster
 
