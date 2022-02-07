@@ -50,15 +50,16 @@ import base64
 import random
 import string
 
-def header(cluster, cluster_type):
+def header(cluster, cluster_type, pub_key, priv_key):
   # geneate random token to join kubernetes
   kube_token = ''.join(random.choices(string.hexdigits[:16], k=32))
-  with open("inventory/id_rsa.pub", "r") as f:
+  with open(pub_key, "r") as f:
     ssh_authorized_key = f.read()
-  with open("inventory/id_rsa", "r") as f:
+  with open(priv_key, "r") as f:
     b = f.read().encode()
     ssh_privkey_b64 = base64.b64encode(b).decode()
   return f"""[all:vars]
+ansible_ssh_private_key_file={priv_key}
 virt_dir={virt_dir}
 image_url={params[cluster_type]['image_url']}
 os_variant={params[cluster_type]['os_variant']}
@@ -81,6 +82,10 @@ def inventory(cluster, server, count, disk, mem, cpu):
     hosts += f"{subnet}.{10+n} id={n} hostname={cluster}{n} mac_addr={subnet_mac}:{10+n} disk_size={disk} mem_size={mem} vcpu_num={vcpu}\n"
   return hosts
 
+def main_script(ctype):
+  if ctype == "microk8s":
+    return
+
 def write_file(filename, content):
   print(f">>> {filename}")
   dir = os.path.dirname(filename)
@@ -91,16 +96,44 @@ def write_file(filename, content):
   with open(filename, "w") as f:
     f.write(content)
 
-if __name__ == "__main__":
+def aws():
   parser = argparse.ArgumentParser("configure")
-  parser.add_argument("cluster", help="name of cluster")
+  parser.add_argument("name", help="name of cluster")
+  parser.add_argument("cloud", help="cloud type")
+  parser.add_argument("key", help="aws key")
+  parser.add_argument("secret", help="aws secret")
+  
+  args = parser.parse_args()
+  write_file(f"inventory/{args.name}.type", "aws")
+  write_file(f"inventory/{args.name}/hosts", f"""[all:vars]
+aws_access_key={args.key}
+aws_secret_key={args.secret}
+""")
+
+def kvm():
+  parser = argparse.ArgumentParser("configure")
+  parser.add_argument("name", help="name of cluster")
+  parser.add_argument("cloud", help="cloud type")
+  parser.add_argument("ktype", help="kube type", choices=["microk8s", "okd"])
   parser.add_argument("server", help="hostname of server")
-  parser.add_argument("type", help="cluster type", choices=["okd", "microk8s"])
+  parser.add_argument("priv_key", help="private key file")
+  parser.add_argument("pub_key", help="public key file")
   parser.add_argument("count", type=int, help="number of nodes")
   parser.add_argument("disk", type=int, help="disk size in gigabytes of each node")
   parser.add_argument("mem", type=int, help="memory size in gigabytes of each node")
   parser.add_argument("cpu", type=int, help="number of virtual cpu per node of each node")
-
   args = parser.parse_args()
-  write_file(f"inventory/{args.cluster}/hosts", 
-    header(args.cluster, args.type) + inventory(args.cluster, args.server, args.count, args.disk, args.mem, args.cpu))
+  write_file(f"inventory/{args.name}.type", args.ktype)
+  write_file(f"inventory/{args.name}/hosts", 
+    header(args.name, args.ktype, args.pub_key, args.priv_key) + inventory(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
+
+def main():
+    if len(sys.argv) > 2:
+      if sys.argv[2] == "kvm":
+        return kvm()
+      if sys.argv[2] == "aws":
+        return aws()
+    print("usage: <name> [kvm|aws] ... (use the subcommand for details) ") 
+
+if __name__ == "__main__":
+    main()

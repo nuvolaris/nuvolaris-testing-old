@@ -19,9 +19,11 @@ version: '3'
 
 tasks:
   setup:
+    - pip install boto3
     - ansible-galaxy collection install community.general
     - ansible-galaxy collection install community.libvirt
     - ansible-galaxy collection install ansible.posix
+    - ansible-galaxy collection install community.aws
     
   pull-all: # cmd to pull all runtimes
     cmds: 
