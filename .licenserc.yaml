@@ -35,6 +35,7 @@ header:
     - '**/misc/**'
     - '**/_*'
     - '**/ansible/inventory/**'
+    - '**/ansible/kubeconfig/**'
  
 dependency:
   files:

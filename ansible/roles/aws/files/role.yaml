@@ -15,28 +15,31 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-- debug: 
-    msg: "{{subnet}}.0/16"
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Amazon EKS Cluster Role'
 
-- name: create a VPC
-  amazon.aws.ec2_vpc_net:
-    name: "{{cluster}}_vpc"
-    cidr_block: "{{subnet}}.0/16"
+Resources:
 
-- name: Create a role with description and tags
-  community.aws.iam_role:
-    name: mynewrole
-    assume_role_policy_document: "{{ lookup('file','policy.json') }}"
-    description: This is My New Role
+  eksClusterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - eks.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
 
-#- name: Create an EKS cluster
-#  community.aws.aws_eks_cluster:
-#    name: my_cluster
-#    version: 1.14
-#    role_arn: my_eks_role
-#    subnets:
-#      - subnet-aaaa1111
-#    security_groups:
-#      - my_eks_sg
-#      - sg-abcd1234
-#  register: caller_facts
+Outputs:
+
+  RoleArn:
+    Description: The role that Amazon EKS will use to create AWS resources for Kubernetes clusters
+    Value: !GetAtt eksClusterRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-RoleArn"

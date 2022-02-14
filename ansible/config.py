@@ -50,6 +50,18 @@ import base64
 import random
 import string
 
+def write_file(filename, content):
+  print(f">>> {filename}")
+  dir = os.path.dirname(filename)
+  try:
+    os.makedirs(dir, 0o755)
+  except OSError:
+    pass
+  with open(filename, "w") as f:
+    f.write(content)
+
+# kvw
+
 def header(cluster, cluster_type, pub_key, priv_key):
   # geneate random token to join kubernetes
   kube_token = ''.join(random.choices(string.hexdigits[:16], k=32))
@@ -82,34 +94,6 @@ def inventory(cluster, server, count, disk, mem, cpu):
     hosts += f"{subnet}.{10+n} id={n} hostname={cluster}{n} mac_addr={subnet_mac}:{10+n} disk_size={disk} mem_size={mem} vcpu_num={vcpu}\n"
   return hosts
 
-def main_script(ctype):
-  if ctype == "microk8s":
-    return
-
-def write_file(filename, content):
-  print(f">>> {filename}")
-  dir = os.path.dirname(filename)
-  try:
-    os.makedirs(dir, 0o755)
-  except OSError:
-    pass
-  with open(filename, "w") as f:
-    f.write(content)
-
-def aws():
-  parser = argparse.ArgumentParser("configure")
-  parser.add_argument("name", help="name of cluster")
-  parser.add_argument("cloud", help="cloud type")
-  parser.add_argument("key", help="aws key")
-  parser.add_argument("secret", help="aws secret")
-  
-  args = parser.parse_args()
-  write_file(f"inventory/{args.name}.type", "aws")
-  write_file(f"inventory/{args.name}/hosts", f"""[all:vars]
-aws_access_key={args.key}
-aws_secret_key={args.secret}
-""")
-
 def kvm():
   parser = argparse.ArgumentParser("configure")
   parser.add_argument("name", help="name of cluster")
@@ -127,6 +111,34 @@ def kvm():
   write_file(f"inventory/{args.name}/hosts", 
     header(args.name, args.ktype, args.pub_key, args.priv_key) + inventory(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
 
+# aws
+
+def aws():
+  parser = argparse.ArgumentParser("configure")
+  parser.add_argument("name", help="name of cluster")
+  parser.add_argument("cloud", help="cloud type")
+  parser.add_argument("key", help="aws key")
+  parser.add_argument("secret", help="aws secret")
+  parser.add_argument("region", help="aws region")
+  parser.add_argument("type", help="worker instance type")
+  parser.add_argument("count", type=int, help="number of workers")
+  parser.add_argument("disk", type=int, help="disk size in gigabytes of each node")
+  
+  args = parser.parse_args()
+  write_file(f"inventory/{args.name}.type", "aws")
+  write_file(f"inventory/{args.name}/hosts", f"""[all:vars]
+cluster={args.name}
+aws_access_key={args.key}
+aws_secret_key={args.secret}
+region={args.region}
+subnet={subnet}
+instance_type={args.type}
+count={args.count}
+disk_size={args.disk}
+""")
+
+# main
+
 def main():
     if len(sys.argv) > 2:
       if sys.argv[2] == "kvm":
@@ -134,6 +146,7 @@ def main():
       if sys.argv[2] == "aws":
         return aws()
     print("usage: <name> [kvm|aws] ... (use the subcommand for details) ") 
+
 
 if __name__ == "__main__":
     main()
