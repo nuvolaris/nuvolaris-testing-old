@@ -15,36 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
----
-- set_fact:
-    host: "{{item}}"
-    id: "{{hostvars[item].id}}"
-  tags: ["shutdown"]
 
-- name: libvirt destroy vm
-  community.libvirt.virt:
-    command: destroy
-    name: "{{cluster}}{{id}}"
-  tags: ["shutdown"]
-  ignore_errors: yes
-- name: libvirt undefine vm
-  community.libvirt.virt:
-    command: undefine
-    name: "{{cluster}}{{id}}"
-  ignore_errors: yes
-  tags: ["shutdown"]
-- name: remove
-  shell: >
-      for ext in img yml txt iso xml ;
-      do f="{{virt_dir}}/{{cluster}}/{{cluster}}{{id}}.$ext" ;
-        test -e "$f" && rm -f "$f"
-      done
-  ignore_errors: yes
-  
-- name: libvirt destroy net
-  community.libvirt.virt_net:
-    command: destroy
-    name: "{{cluster}}"
-  ignore_errors: yes
-  when: id == '0'
-  
+- name: build
+  hosts: server
+  become: yes
+  tasks:
+    - include_tasks: kvmcleanvm.yml
+      loop: "{{groups['nodes']}}"

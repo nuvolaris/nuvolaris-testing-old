@@ -193,24 +193,11 @@ def main():
         return kvm()
       if sys.argv[2] == "aws":
         return aws()
-<<<<<<< HEAD
       if sys.argv[2] == "azure":
         return azure()            
       if sys.argv[2] == "okd":
         return okd()
     print("usage: <name> [kvm|aws|okd|azure] ... (use the subcommand for details) ") 
-=======
-      if sys.argv[2] == "okd":
-        return okd()
-<<<<<<< HEAD
-    print("usage: <name> [kvm|aws|okd] ... (use the subcommand for details) ") 
->>>>>>> 77cc792 (reworked clean and tagging)
-=======
-      if sys.argv[2] == "azure":
-        return azure()        
-    print("usage: <name> [kvm|aws|okd|azure] ... (use the subcommand for details) ") 
-
->>>>>>> 07acc9b (Added Azure skeleton in config.py)
 
 if __name__ == "__main__":
     main()

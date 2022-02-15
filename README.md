@@ -111,7 +111,7 @@ Example:
 
 # How to destroy the cluster
 
-Select the corresponding cleaninig script with the cluster configuration and select the tag clean.
+Select the corresponding cleaninig script with the cluster configuration.
 
-- KVM: `./play.sh clean`
-- AWS: `./play.sh clean`
+- KVM: `./play.sh m8s all kwmclean`
+- AWS: `./play.sh eks all awsclean`
