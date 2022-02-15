@@ -15,19 +15,35 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-- debug: 
-    msg: "{{subnet}}.0/16"
 
-- name: create a VPC
+- name: create aws role
+  community.aws.iam_role:
+    name: eksClusterRole
+    description: EKS Cluster Role
+    assume_role_policy_document: "{{ lookup('file','policy.json') }}"
+    managed_policies:
+      - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+  register: role
+
+- debug: msg="{{role.arn}}"
+
+- name: create aws vpc
   amazon.aws.ec2_vpc_net:
     name: "{{cluster}}_vpc"
     cidr_block: "{{subnet}}.0/16"
+  register: vpc
 
-- name: Create a role with description and tags
-  community.aws.iam_role:
-    name: mynewrole
-    assume_role_policy_document: "{{ lookup('file','policy.json') }}"
-    description: This is My New Role
+- debug: msg="{{vpc.id}}"
+
+- name: create aws subnet 
+  amazon.aws.ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{vpc.is}}"
+    cidr: "{{subnet}}.0/24"
+  register: subnet
+
+- debug: msg="{{subnet.id}}"
+
 
 #- name: Create an EKS cluster
 #  community.aws.aws_eks_cluster:

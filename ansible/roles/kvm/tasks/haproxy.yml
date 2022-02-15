@@ -20,8 +20,8 @@
 
 - name: configure haproxy
   template:
-   src: "haproxy.cfg"
-   dest: "/etc/haproxy/haproxy.cfg"
+    src: "haproxy.cfg"
+    dest: "/etc/haproxy/haproxy.cfg"
 
 - name: start haproxy
   service: name="haproxy" state=started enabled=yes

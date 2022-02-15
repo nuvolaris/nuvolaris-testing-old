@@ -40,13 +40,23 @@ Get a remote server running Ubuntu 20.04, say `test.server` You need at least 64
 5. access to the server with Kubernetes in it with `kubectl --kubeconfig kubeconfig`
 
 
+## Advanced use
+
+Note that full syntax is  `./play.sh <cluster> [<tag> [<script>]]`
+
+So you can select a tag and execute only a part of the script select by `<tag>` (not documented here).
+
+Also you can use alternative scripts.
+
 ## Configuration examples
 
 # KVM with Microk8s
 
 Syntax 
 
-`./config.py kwm <name> <server-hostname> <priv_key-file> <pub_key-file> <node-count> <disk-size-in-gb> <mem-size-in-gb> <num-of-vcpu>`
+`./config.py kwm <name> <kube-type> <server-hostname> <priv_key-file> <pub_key-file> <node-count> <disk-size-in-gb> <mem-size-in-gb> <num-of-vcpu>`
+
+`<kube-type>` can be `microk8s` or `okd`
 
 Example:
 
@@ -69,7 +79,7 @@ TODO: add other kinds of kubernetes: k3s, kubeadm etc
 # AWS
 
 ```
-./config.py eks aws <key> <secret>
+./config.py eks aws <key> <secret>  <region> <vm-type> <node-count> <disk-size>
 ```
 
 Example:
@@ -96,6 +106,7 @@ kubectl --kubeconfig kubeconfig/m8s/kubeconfig get nodes
 ```
 # How to destroy the cluster
 
-```
-./play.sh m8s clean
-```
+Select the corresponding cleaninig script with the cluster configuration.
+
+- KVM: `./play.sh m8s all kwmclean`
+- AWS: `./play.sh eks all awsclean`
