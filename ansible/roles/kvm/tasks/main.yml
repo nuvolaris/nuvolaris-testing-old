@@ -15,12 +15,22 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-- include_tasks: clean.yml
-  tags: ["clean","shutdown"]
+
+- import_tasks: prereq.yml
+  tags: ["prereq"]
+
+- import_tasks: network.yml
+  tags: ["network"]
+
+- include_tasks: 
+    file: vms.yml
+    apply:
+      tags: ["vms"]
   loop: "{{groups['nodes']}}"
-- include_tasks: prereq.yml
-- include_tasks: network.yml
-- include_tasks: vms.yml
-  loop: "{{groups['nodes']}}"
-- include_tasks: kubeconfig.yml
+  tags: ["vms"]
+
+- import_tasks: kubeconfig.yml
+  tags: ["kubeconfig"]
+
 - include_tasks: haproxy.yml
+  tags: ["haproxy"]

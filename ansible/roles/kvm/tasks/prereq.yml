@@ -16,16 +16,15 @@
 # under the License.
 #
 - file: path=/var/lib/apt/lists/ state=directory
-- name: apt-get update 
+
+- name: apt-get update
   apt:
     update_cache: yes 
-    autoremove: yes
 
-- name: apt-get upgrade
+- name: apt-get upgrade 
   apt:
-    name: '*'
-    state: latest
-    force_apt_get: true
+    upgrade: dist
+    autoremove: yes
 
 - name: install ubuntu packages
   apt: name={{item}} 
@@ -61,11 +60,11 @@
 
 - name: cluster directory
   file: 
-   path: "{{virt_dir}}/{{cluster}}"
-   state: directory
-   mode: 0755
+    path: "{{virt_dir}}/{{cluster}}"
+    state: directory
+    mode: 0755
 
 - name: download base image
   get_url:
-   url: '{{image_url}}'
-   dest: "{{virt_dir}}/{{base_image}}"
+    url: '{{image_url}}'
+    dest: "{{virt_dir}}/{{base_image}}"

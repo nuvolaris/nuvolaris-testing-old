@@ -60,7 +60,7 @@ def write_file(filename, content):
   with open(filename, "w") as f:
     f.write(content)
 
-# kvw
+# kvm
 
 def header(cluster, cluster_type, pub_key, priv_key):
   # geneate random token to join kubernetes
@@ -177,7 +177,6 @@ def main():
       if sys.argv[2] == "azure":
         return azure()        
     print("usage: <name> [kvm|aws|azure] ... (use the subcommand for details) ") 
-
 
 if __name__ == "__main__":
     main()

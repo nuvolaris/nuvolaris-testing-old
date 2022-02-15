@@ -19,7 +19,7 @@
 cd "$(dirname $0)"
 
 INV=${1:?cluster}
-TAG=${2:-untagged}
+TAG=${2:-all}
 
 shift
 shift
@@ -34,7 +34,7 @@ test -f inventory/id_rsa.pub || die "please put the public for the main server i
 test -f "inventory/$INV.type" || die "please configure a cluster with config.py"
 
 TYPE="$(cat inventory/$INV.type)"
-SCRIPT=${3:-$TYPE}
+SCRIPT=${1:-$TYPE}
 shift
 
 ansible-playbook \

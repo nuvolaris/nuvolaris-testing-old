@@ -15,8 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+
 - name: build
   hosts: server
   become: yes
-  roles:
-    - kvm
+  tasks:
+    - include_tasks: kvmcleanvm.yml
+      loop: "{{groups['nodes']}}"

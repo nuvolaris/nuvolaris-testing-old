@@ -16,38 +16,33 @@
 # under the License.
 #
 - set_fact:
-   host: "{{item}}"
-   id: "{{hostvars[item].id}}"
-  tags: ["clean", "shutdown"]
+    host: "{{item}}"
+    id: "{{hostvars[item].id}}"
+  tags: ["shutdown"]
 
 - name: libvirt destroy vm
   community.libvirt.virt:
     command: destroy
     name: "{{cluster}}{{id}}"
-  tags: ["clean", "shutdown"]
+  tags: ["shutdown"]
   ignore_errors: yes
-
 - name: libvirt undefine vm
   community.libvirt.virt:
     command: undefine
     name: "{{cluster}}{{id}}"
   ignore_errors: yes
-  tags: ["clean", "shutdown"]
-
+  tags: ["shutdown"]
 - name: remove
   shell: >
       for ext in img yml txt iso xml ;
       do f="{{virt_dir}}/{{cluster}}/{{cluster}}{{id}}.$ext" ;
-         test -e "$f" && rm -f "$f"
+        test -e "$f" && rm -f "$f"
       done
   ignore_errors: yes
-  tags: clean
-
 - name: libvirt destroy net
   community.libvirt.virt_net:
     command: destroy
     name: "{{cluster}}"
-  tags: "clean"
   ignore_errors: yes
   when: id == '0'
 
