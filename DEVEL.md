@@ -24,14 +24,14 @@ This is an ansible script to be executed from the developer container or from a 
 For development, please execute it from a terminal opening the Nuvolaris development container with VSCode (check [this](https://github.com/nuvolaris/nuvolaris/blob/main/docs/DEVEL.md)), so you pick he right version of ansible
 
 
-If you need more libraries fro ansible galaxy, please add them to the setup task of the [Taskfile](./Taskfile.yml).
+If you need more libraries for ansible galaxy, please add them to the setup task of the [Taskfile](./Taskfile.yml).
 
-Execute the scripts with cd in the `ansible` folder, and plese follow the stucture. It separates the inventory in multiple folders under `inventory` and the starting point in multiple under the `scripts` folder. so you can build either a server or a cloud with it.
+Execute the scripts with cd in the `ansible` folder, and please follow the stucture. It separates the inventory in multiple folders under `inventory` and the starting point in multiple under the `scripts` folder, so you can build either a server or a cloud with it.
 
 The script is expected to be configured with:
 
 ```
-./config.pt <name> <cluster> <params...>
+./config.py <name> <cluster> <params...>
 ```
 
 So edit the `config.py` to generate the inventory for `<name>` under a subfolder of `inventory`

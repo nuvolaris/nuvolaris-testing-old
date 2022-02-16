@@ -25,6 +25,7 @@ tasks:
     - ansible-galaxy collection install community.libvirt
     - ansible-galaxy collection install amazon.aws
     - ansible-galaxy collection install community.aws
+    - ansible-galaxy collection install azure.azcollection
     
   pull-all: # cmd to pull all runtimes
     cmds: 
