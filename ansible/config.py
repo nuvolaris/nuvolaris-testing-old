@@ -133,84 +133,6 @@ aws_access_key={args.key}
 aws_secret_key={args.secret}
 region={args.region}
 vpc={vpc}
-<<<<<<< HEAD
-instance_type={args.type}
-count={args.count}
-disk_size={args.disk}
-""")
-
-# azure
-def azure():
-  parser = argparse.ArgumentParser("configure")
-  parser.add_argument("name", help="name of cluster")
-  parser.add_argument("cloud", help="cloud type")
-  parser.add_argument("subscription", help="subscription id")
-  parser.add_argument("tenant", help="tenant id")
-  parser.add_argument("key", help="service pricipal client id")
-  parser.add_argument("secret", help="service principal secret")
-  parser.add_argument("region", help="azure region")
-  parser.add_argument("type", help="worker instance type")
-  parser.add_argument("count", type=int, help="number of workers")
-  parser.add_argument("disk", type=int, help="disk size in gigabytes of each node")
-  
-  args = parser.parse_args()
-  write_file(f"inventory/{args.name}.type", "azure")
-  write_file(f"inventory/{args.name}/hosts", f"""[all:vars]
-cluster={args.name}
-subscription_id={args.subscription}
-tenant={args.tenant}
-client_id={args.key}
-secret={args.secret}
-region={args.region}
-subnet={subnet}
-instance_type={args.type}
-count={args.count}
-disk_size={args.disk}
-""")
-# okd
-def okd():
-  parser = argparse.ArgumentParser("configure")
-  parser.add_argument("name", help="name of cluster")
-  parser.add_argument("cloud", help="cloud type")
-  parser.add_argument("server", help="hostname of server")
-  parser.add_argument("priv_key", help="private key file")
-  parser.add_argument("pub_key", help="public key file")
-  parser.add_argument("count", type=int, help="number of nodes")
-  parser.add_argument("disk", type=int, help="disk size in gigabytes of each node")
-  parser.add_argument("mem", type=int, help="memory size in gigabytes of each node")
-  parser.add_argument("cpu", type=int, help="number of virtual cpu per node of each node")
-  args = parser.parse_args()
-
-  write_file(f"inventory/{args.name}.type", "okd")
-  write_file(f"inventory/{args.name}/hosts",
-    header(args.name, "okd", args.pub_key, args.priv_key) + inventory(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
-
-# azure
-def azure():
-  parser = argparse.ArgumentParser("configure")
-  parser.add_argument("name", help="name of cluster")
-  parser.add_argument("cloud", help="cloud type")
-  parser.add_argument("subscription", help="subscription id")
-  parser.add_argument("tenant", help="tenant id")
-  parser.add_argument("key", help="service pricipal client id")
-  parser.add_argument("secret", help="service principal secret")
-  parser.add_argument("region", help="azure region")
-  parser.add_argument("type", help="worker instance type")
-  parser.add_argument("count", type=int, help="number of workers")
-  parser.add_argument("disk", type=int, help="disk size in gigabytes of each node")
-  
-  args = parser.parse_args()
-  write_file(f"inventory/{args.name}.type", "azure")
-  write_file(f"inventory/{args.name}/hosts", f"""[all:vars]
-cluster={args.name}
-subscription_id={args.subscription}
-tenant={args.tenant}
-client_id={args.key}
-secret={args.secret}
-region={args.region}
-subnet={subnet}
-=======
->>>>>>> 77cc792 (reworked clean and tagging)
 instance_type={args.type}
 count={args.count}
 disk_size={args.disk}
@@ -234,6 +156,30 @@ def okd():
   write_file(f"inventory/{args.name}/hosts",
     header(args.name, "okd", args.pub_key, args.priv_key) + inventory(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
 
+# azure
+def azure():
+  parser = argparse.ArgumentParser("configure")
+  parser.add_argument("name", help="name of cluster")
+  parser.add_argument("cloud", help="cloud type")
+  parser.add_argument("key", help="service pricipal key")
+  parser.add_argument("secret", help="service principal secret")
+  parser.add_argument("region", help="azure region")
+  parser.add_argument("type", help="worker instance type")
+  parser.add_argument("count", type=int, help="number of workers")
+  parser.add_argument("disk", type=int, help="disk size in gigabytes of each node")
+  
+  args = parser.parse_args()
+  write_file(f"inventory/{args.name}.type", "azure")
+  write_file(f"inventory/{args.name}/hosts", f"""[all:vars]
+cluster={args.name}
+sp_access_key={args.key}
+sp_secret_key={args.secret}
+region={args.region}
+subnet={subnet}
+instance_type={args.type}
+count={args.count}
+disk_size={args.disk}
+""")
 
 # main
 
@@ -252,8 +198,15 @@ def main():
 =======
       if sys.argv[2] == "okd":
         return okd()
+<<<<<<< HEAD
     print("usage: <name> [kvm|aws|okd] ... (use the subcommand for details) ") 
 >>>>>>> 77cc792 (reworked clean and tagging)
+=======
+      if sys.argv[2] == "azure":
+        return azure()        
+    print("usage: <name> [kvm|aws|okd|azure] ... (use the subcommand for details) ") 
+
+>>>>>>> 07acc9b (Added Azure skeleton in config.py)
 
 if __name__ == "__main__":
     main()
