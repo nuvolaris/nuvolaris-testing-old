@@ -189,7 +189,9 @@ def azure():
   parser = argparse.ArgumentParser("configure")
   parser.add_argument("name", help="name of cluster")
   parser.add_argument("cloud", help="cloud type")
-  parser.add_argument("key", help="service pricipal key")
+  parser.add_argument("subscription", help="subscription id")
+  parser.add_argument("tenant", help="tenant id")
+  parser.add_argument("key", help="service pricipal client id")
   parser.add_argument("secret", help="service principal secret")
   parser.add_argument("region", help="azure region")
   parser.add_argument("type", help="worker instance type")
@@ -200,8 +202,10 @@ def azure():
   write_file(f"inventory/{args.name}.type", "azure")
   write_file(f"inventory/{args.name}/hosts", f"""[all:vars]
 cluster={args.name}
-sp_access_key={args.key}
-sp_secret_key={args.secret}
+subscription_id={args.subscription}
+tenant={args.tenant}
+client_id={args.key}
+secret={args.secret}
 region={args.region}
 subnet={subnet}
 instance_type={args.type}
