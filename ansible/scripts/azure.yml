@@ -15,8 +15,22 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+<<<<<<<< HEAD:ansible/scripts/azure.yml
 
 - name: azure
   hosts: localhost
   roles:
     - azure
+========
+#cloud-config
+#chpasswd:
+#  list: |
+#     root:passw0rd
+#     ubuntu:passw0rd
+#  expire: False
+ssh_pwauth: True
+ssh_authorized_keys:
+  - {{ssh_authorized_key}}
+bootcmd:
+  - echo "ssh key set for user ubuntu"
+>>>>>>>> main:ansible/roles/okd/templates/plain.yml

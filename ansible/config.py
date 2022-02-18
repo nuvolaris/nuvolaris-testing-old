@@ -184,25 +184,6 @@ instance_type={args.type}
 count={args.count}
 disk_size={args.disk}
 """)
-# okd
-def okd():
-  parser = argparse.ArgumentParser("configure")
-  parser.add_argument("name", help="name of cluster")
-  parser.add_argument("cloud", help="cloud type")
-  parser.add_argument("server", help="hostname of server")
-  parser.add_argument("priv_key", help="private key file")
-  parser.add_argument("pub_key", help="public key file")
-  parser.add_argument("count", type=int, help="number of nodes")
-  parser.add_argument("disk", type=int, help="disk size in gigabytes of each node")
-  parser.add_argument("mem", type=int, help="memory size in gigabytes of each node")
-  parser.add_argument("cpu", type=int, help="number of virtual cpu per node of each node")
-  args = parser.parse_args()
-
-  write_file(f"inventory/{args.name}.type", "okd")
-  write_file(f"inventory/{args.name}/hosts",
-    header(args.name, "okd", args.pub_key, args.priv_key) + inventory(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
-
-
 # main
 
 def main():

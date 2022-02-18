@@ -36,7 +36,6 @@
     apply:
       tags: ["vms"]
   loop: "{{groups['nodes']}}"
-=======
 - import_tasks: prereq.yml
   tags: ["prereq"]
 
@@ -48,8 +47,6 @@
     apply:
       tags: ["vms"]
   loop: "{{groups['nodes']}}"
->>>>>>> 9757425 (big refactoring to work with slow machines)
-  tags: ["vms"]
 
 - import_tasks: kubeconfig.yml
   tags: ["kubeconfig"]
