@@ -36,6 +36,7 @@ header:
     - '**/_*'
     - '**/ansible/inventory/**'
     - '**/ansible/kubeconfig/**'
+    - '.gitkeep'
  
 dependency:
   files:

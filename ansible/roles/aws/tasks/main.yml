@@ -16,43 +16,10 @@
 # under the License.
 #
 
-- name: create aws role
-  community.aws.iam_role:
-    name: eksClusterRole
-    description: EKS Cluster Role
-    assume_role_policy_document: "{{ lookup('file','policy.json') }}"
-    managed_policies:
-      - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
-  register: role
+# clean
+- import_tasks: clean.yml
+  tags: ["never", "clean"]
 
-- debug: msg="{{role.arn}}"
-
-- name: create aws vpc
-  amazon.aws.ec2_vpc_net:
-    name: "{{cluster}}_vpc"
-    cidr_block: "{{subnet}}.0/16"
-  register: vpc
-
-- debug: msg="{{vpc.id}}"
-
-- name: create aws subnet 
-  amazon.aws.ec2_vpc_subnet:
-    state: present
-    vpc_id: "{{vpc.is}}"
-    cidr: "{{subnet}}.0/24"
-  register: subnet
-
-- debug: msg="{{subnet.id}}"
-
-
-#- name: Create an EKS cluster
-#  community.aws.aws_eks_cluster:
-#    name: my_cluster
-#    version: 1.14
-#    role_arn: my_eks_role
-#    subnets:
-#      - subnet-aaaa1111
-#    security_groups:
-#      - my_eks_sg
-#      - sg-abcd1234
-#  register: caller_facts
+# build
+- import_tasks: build.yml
+  tags: ["build"]

@@ -15,7 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-- debug: msg="generating file"
-- copy:
-   src: "demo1.txt"
-   dest: "/tmp"
+- name: kvm
+  hosts: server
+  become: yes
+  roles:
+    - kvm
