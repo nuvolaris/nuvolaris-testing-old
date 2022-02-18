@@ -1,4 +1,3 @@
-#!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,30 +14,14 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
-cd "$(dirname $0)"
 
-INV=${1:?cluster}
-TAG=${2:-untagged}
-
-shift
-shift
-
-die() {
-    echo "$@"
-    exit 1
-}
-
-test -f inventory/id_rsa || die "please put the private key for the main server in inventory/id_rsa"
-test -f inventory/id_rsa.pub || die "please put the public for the main server inventory/id_rsa.pub"
-test -f "inventory/$INV.type" || die "please configure a cluster with config.py"
-
-TYPE="$(cat inventory/$INV.type)"
-SCRIPT=${3:-$TYPE}
-shift
-
-ansible-playbook \
-  -i ./inventory/$INV \
-  --tags "$TAG" \
-  "$@" \
-  "scripts/${SCRIPT##.yml}.yml" 
+- name: Create Nuvolaris resource group
+  azure_rm_resourcegroup:
+    name: nuvolaris
+    subscription_id: '{{ subscription_id }}'
+    client_id: '{{ client_id }}'
+    secret: '{{ secret }}'
+    tenant: '{{ tenant }}'
+    location: '{{ region }}'    
+    tags:
+        nuvolaris: testing

@@ -26,6 +26,7 @@ tasks:
     - ansible-galaxy collection install amazon.aws
     - ansible-galaxy collection install community.aws
     - ansible-galaxy collection install azure.azcollection
+    - pip install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements-azure.txt
     
   pull-all: # cmd to pull all runtimes
     cmds: 

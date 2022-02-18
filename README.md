@@ -79,21 +79,26 @@ Example:
 #./play.sh eks
 ```
 
-Example using `microk8s`:
+# Azure
+
+__Pre-requisites__
+
+Create a service pricipal as explained [here](https://docs.microsoft.com/en-us/azure/developer/ansible/create-ansible-service-principal?tabs=azure-cli).
+Take note of the *password* fields in the output.
+
+Get your *subscription_id*, *tenant* and *client_id* running these commands:
 
 ```
-# 1 generate keys
-cd ansible
-ssh-keygen -f inventory/id_rsa
-# 2 copy to the test server (change test.server with your own)
-ssh-copy-id -i inventory/id_rsa root@test.server
-# 3 generate a config names m8s with 4 nodes 20gb disk 8gb memory and 2 vcpu each
-./config.py m8s test.server microk8s 4 20 8 2
-# 4 install everything
-./play.sh m8s
-# 5 check everything works
-kubectl --kubeconfig kubeconfig/m8s/kubeconfig get nodes
+az account show --query '{tenantId:tenantId,subscriptionid:id}'
+az ad sp list --display-name ansible --query '{clientId:[0].appId}'
 ```
+Example:
+
+```
+/config.py nuvolaris azure <subscription> <tenant> <client id> <secret> northeurope DS2v2 2 50
+#./play.sh aks
+```
+
 # How to destroy the cluster
 
 ```
