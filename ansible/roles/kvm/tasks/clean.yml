@@ -27,12 +27,14 @@
     name: "{{cluster}}{{id}}"
   tags: ["shutdown"]
   ignore_errors: yes
+
 - name: libvirt undefine vm
   community.libvirt.virt:
     command: undefine
     name: "{{cluster}}{{id}}"
   ignore_errors: yes
   tags: ["shutdown"]
+
 - name: remove
   shell: >
       for ext in img yml txt iso xml ;

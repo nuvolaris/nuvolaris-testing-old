@@ -16,7 +16,6 @@
 # under the License.
 #
 
-<<<<<<< HEAD
 # clean
 - include_tasks: 
     file: clean.yml
