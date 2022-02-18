@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 #
----
 - set_fact:
     host: "{{item}}"
     id: "{{hostvars[item].id}}"
@@ -27,14 +26,12 @@
     name: "{{cluster}}{{id}}"
   tags: ["shutdown"]
   ignore_errors: yes
-
 - name: libvirt undefine vm
   community.libvirt.virt:
     command: undefine
     name: "{{cluster}}{{id}}"
   ignore_errors: yes
   tags: ["shutdown"]
-
 - name: remove
   shell: >
       for ext in img yml txt iso xml ;
@@ -42,11 +39,15 @@
         test -e "$f" && rm -f "$f"
       done
   ignore_errors: yes
-  
 - name: libvirt destroy net
   community.libvirt.virt_net:
     command: destroy
     name: "{{cluster}}"
   ignore_errors: yes
   when: id == '0'
-  
+
+#- name: remove base
+#  shell: rm "{{virt_dir}}/{{cluster}}/base.img" 
+#  ignore_errors: yes
+#  tags: clean
+#  when: id == '0'

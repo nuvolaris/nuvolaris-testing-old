@@ -1,0 +1,70 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+- file: path=/var/lib/apt/lists/ state=directory
+
+- name: apt-get update
+  apt:
+    update_cache: yes 
+
+- name: apt-get upgrade 
+  apt:
+    upgrade: dist
+    autoremove: yes
+
+- name: install ubuntu packages
+  apt: name={{item}} 
+  with_items:
+    - software-properties-common
+    - apt-transport-https 
+    - ca-certificates
+    - curl
+    - iptables-persistent
+    - python3-pip
+    - python3-dev
+    - python3-lxml
+    - pkg-config
+    - qemu-kvm
+    - qemu-utils
+    - libvirt-dev
+    - libvirt-daemon-system
+    - cloud-image-utils
+    - virtinst
+    - dnsmasq
+    - ufw
+- name: install python libraries
+  pip: state=present name={{item}}
+  with_items:
+    - libvirt-python
+
+- name: enable forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    state: present
+    reload: yes
+
+- name: cluster directory
+  file: 
+    path: "{{virt_dir}}/{{cluster}}"
+    state: directory
+    mode: 0755
+
+- name: download base image
+  get_url:
+    url: '{{image_url}}'
+    dest: "{{virt_dir}}/{{base_image}}"

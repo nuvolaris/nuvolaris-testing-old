@@ -1,0 +1,5 @@
+- name: Remove an EKS cluster
+  community.aws.aws_eks_cluster:
+    name: "{{cluster}}_cluster"
+    state: absent
+    wait: yes

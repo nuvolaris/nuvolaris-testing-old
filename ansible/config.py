@@ -17,6 +17,7 @@
 # under the License.
 #
 
+vpc = "10.0"
 subnet = "10.0.0"
 subnet_mac = "52:54:10:00:00"
 virt_dir = "/var/lib/libvirt"
@@ -94,6 +95,7 @@ def inventory(cluster, server, count, disk, mem, cpu):
     hosts += f"{subnet}.{10+n} id={n} hostname={cluster}{n} mac_addr={subnet_mac}:{10+n} disk_size={disk} mem_size={mem} vcpu_num={vcpu}\n"
   return hosts
 
+# kvm
 def kvm():
   parser = argparse.ArgumentParser("configure")
   parser.add_argument("name", help="name of cluster")
@@ -107,12 +109,11 @@ def kvm():
   parser.add_argument("mem", type=int, help="memory size in gigabytes of each node")
   parser.add_argument("cpu", type=int, help="number of virtual cpu per node of each node")
   args = parser.parse_args()
-  write_file(f"inventory/{args.name}.type", args.ktype)
+  write_file(f"inventory/{args.name}.type", "kvm")
   write_file(f"inventory/{args.name}/hosts", 
     header(args.name, args.ktype, args.pub_key, args.priv_key) + inventory(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
 
 # aws
-
 def aws():
   parser = argparse.ArgumentParser("configure")
   parser.add_argument("name", help="name of cluster")
@@ -123,19 +124,38 @@ def aws():
   parser.add_argument("type", help="worker instance type")
   parser.add_argument("count", type=int, help="number of workers")
   parser.add_argument("disk", type=int, help="disk size in gigabytes of each node")
-  
   args = parser.parse_args()
+
   write_file(f"inventory/{args.name}.type", "aws")
   write_file(f"inventory/{args.name}/hosts", f"""[all:vars]
 cluster={args.name}
 aws_access_key={args.key}
 aws_secret_key={args.secret}
 region={args.region}
-subnet={subnet}
+vpc={vpc}
 instance_type={args.type}
 count={args.count}
 disk_size={args.disk}
 """)
+
+# okd
+def okd():
+  parser = argparse.ArgumentParser("configure")
+  parser.add_argument("name", help="name of cluster")
+  parser.add_argument("cloud", help="cloud type")
+  parser.add_argument("server", help="hostname of server")
+  parser.add_argument("priv_key", help="private key file")
+  parser.add_argument("pub_key", help="public key file")
+  parser.add_argument("count", type=int, help="number of nodes")
+  parser.add_argument("disk", type=int, help="disk size in gigabytes of each node")
+  parser.add_argument("mem", type=int, help="memory size in gigabytes of each node")
+  parser.add_argument("cpu", type=int, help="number of virtual cpu per node of each node")
+  args = parser.parse_args()
+
+  write_file(f"inventory/{args.name}.type", "okd")
+  write_file(f"inventory/{args.name}/hosts",
+    header(args.name, "okd", args.pub_key, args.priv_key) + inventory(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
+
 
 # main
 
@@ -145,7 +165,9 @@ def main():
         return kvm()
       if sys.argv[2] == "aws":
         return aws()
-    print("usage: <name> [kvm|aws] ... (use the subcommand for details) ") 
+      if sys.argv[2] == "okd":
+        return okd()
+    print("usage: <name> [kvm|aws|okd] ... (use the subcommand for details) ") 
 
 if __name__ == "__main__":
     main()

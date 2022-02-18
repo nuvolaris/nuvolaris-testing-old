@@ -15,7 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-- debug:  msg="generating template"
-- template:
-   src: "demo2.txt"
-   dest: "/tmp"
+#cloud-config
+#chpasswd:
+#  list: |
+#     root:passw0rd
+#     ubuntu:passw0rd
+#  expire: False
+ssh_pwauth: True
+ssh_authorized_keys:
+  - {{ssh_authorized_key}}
+bootcmd:
+  - echo "ssh key set for user ubuntu"

@@ -106,7 +106,7 @@ kubectl --kubeconfig kubeconfig/m8s/kubeconfig get nodes
 ```
 # How to destroy the cluster
 
-Select the corresponding cleaninig script with the cluster configuration.
+Select the corresponding cleaninig script with the cluster configuration and select the tag clean.
 
-- KVM: `./play.sh m8s all kwmclean`
-- AWS: `./play.sh eks all awsclean`
+- KVM: `./play.sh clean`
+- AWS: `./play.sh clean`

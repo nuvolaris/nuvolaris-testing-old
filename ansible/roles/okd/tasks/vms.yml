@@ -1,0 +1,89 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+
+
+  - set_fact:
+      host: "{{item}}"
+      id: "{{hostvars[item].id}}"
+      prefix: "{{virt_dir}}/{{cluster}}/{{cluster}}{{hostvars[item].id}}"
+      hostname: "{{hostvars[item].hostname}}"
+      disk_size: "{{hostvars[item].disk_size}}"
+      mem_size: "{{hostvars[item].mem_size}}"
+      mac_addr: "{{hostvars[item].mac_addr}}"
+      vcpu_num: "{{hostvars[item].vcpu_num}}"
+    
+  - name: copy and resize image
+    shell: >
+      cp {{virt_dir}}/{{base_image}} {{prefix}}.img ;
+      qemu-img resize {{prefix}}.img {{disk_size}}G
+    args:
+      creates: '{{prefix}}.img'
+
+  - name: generate user-data (cloud-init)
+    template:
+      src: "{{cluster_type}}.yml"
+      dest: "{{prefix}}.yml"
+
+  - name: generate meta-data (hostname)
+    template:
+      src: "meta-data.txt"
+      dest: "{{prefix}}.txt"
+
+  - name: build boot iso
+    shell: >
+      cloud-localds "{{prefix}}.iso" "{{prefix}}.yml" "{{prefix}}.txt"
+
+  #- name: libvirt undefine vm
+  #  community.libvirt.virt:
+  #    command: undefine
+  #    name: "{{hostname}}"
+  #  ignore_errors: true
+
+  - name: create vm definition
+    shell: >
+      if test -e "{{prefix}}.xml" ;
+      then cat "{{prefix}}.xml" ;
+      else virt-install
+      --name {{hostname}}
+      --ram $(expr {{mem_size}} \* 1024)
+      --vcpu {{vcpu_num}}
+      --disk path={{prefix}}.img
+      --disk path={{prefix}}.iso,device=cdrom
+      --os-type linux
+      --os-variant {{os_variant}}
+      --network bridge=virbr1,mac={{mac_addr}}
+      --graphics none
+      --console pty,target_type=serial
+      --print-xml | tee "{{prefix}}.xml" ;
+      fi
+    register: vm_xml
+
+  - name: libvirt define vm
+    community.libvirt.virt:
+      command: define
+      xml: '{{vm_xml.stdout}}'
+      autostart: yes
+    ignore_errors: yes
+
+  - name: start vm
+    community.libvirt.virt:
+      command: start
+      name: "{{hostname}}"
+    ignore_errors: yes
+

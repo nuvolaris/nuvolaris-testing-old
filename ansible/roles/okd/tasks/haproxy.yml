@@ -15,10 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+- name: install haproxy
+  apt: name=haproxy
 
-- name: build
-  hosts: server
-  become: yes
-  tasks:
-    - include_tasks: kvmcleanvm.yml
-      loop: "{{groups['nodes']}}"
+- name: configure haproxy
+  template:
+    src: "haproxy.cfg"
+    dest: "/etc/haproxy/haproxy.cfg"
+
+- name: start haproxy
+  service: name="haproxy" state=started enabled=yes

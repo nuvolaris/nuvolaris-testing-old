@@ -1,0 +1,72 @@
+- name: create aws role
+  community.aws.iam_role:
+    name: eksClusterRole
+    description: EKS Cluster Role
+    assume_role_policy_document: "{{ lookup('file','policy.json') }}"
+    managed_policies:
+      - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+  register: role
+
+- debug: msg="{{role.arn}}"
+
+- name: create aws vpc
+  amazon.aws.ec2_vpc_net:
+    name: "{{cluster}}_vpc"
+    cidr_block: "{{vpc}}.0.0/16"
+  register: v
+
+- debug: var=v.vpc.id
+
+- name: create aws subnet 
+  amazon.aws.ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{v.vpc.id}}"
+    cidr: "{{vpc}}.1.0/24"
+    az: "{{region}}a"
+    tags:
+      Name: "{{cluster}}_sub1"
+  register: s1
+
+- debug: var=s1
+
+- name: create another aws subnet 
+  amazon.aws.ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{v.vpc.id}}"
+    cidr: "{{vpc}}.2.0/24"
+    region: "{{region}}"
+    az: "{{region}}b"
+    tags:
+      Name: "{{cluster}}_sub2"
+  register: s2
+
+- debug: var=s2
+
+- name: create security group
+  amazon.aws.ec2_group:
+    name: "{{cluster}}_sec"
+    description: "allow all on port 22"
+    vpc_id: "{{v.vpc.id}}"
+    rules:
+      - proto: tcp
+        ports:
+        - 22
+        cidr_ip: "{{vpc}}.0.0/16"
+        rule_desc: allow all on port 22
+  register: g
+
+- debug: var=g
+
+- name: Create an EKS cluster
+  community.aws.aws_eks_cluster:
+    name: "{{cluster}}_cluster"
+    version: 1.21
+    role_arn: "{{role.arn}}"
+    subnets:
+      - "{{s1.subnet.id}}"
+      - "{{s2.subnet.id}}"
+    security_groups:
+      - "{{g.group_id}}"
+  register: cluster
+
+- debug: var=cluster
