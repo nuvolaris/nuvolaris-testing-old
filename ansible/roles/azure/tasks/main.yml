@@ -15,13 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-- name: Create Nuvolaris resource group
-  azure_rm_resourcegroup:
-    name: nuvolaris
-    subscription_id: '{{ subscription_id }}'
-    client_id: '{{ client_id }}'
-    secret: '{{ secret }}'
-    tenant: '{{ tenant }}'
-    location: '{{ region }}'    
-    tags:
-        nuvolaris: testing
+# clean
+- import_tasks: clean.yml 
+  tags: ["never", "clean"]
+
+# build
+- import_tasks: build.yml
+  tags: ["build"]

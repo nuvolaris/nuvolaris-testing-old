@@ -105,8 +105,8 @@ az ad sp list --display-name ansible --query '{clientId:[0].appId}'
 Example:
 
 ```
-/config.py nuvolaris azure <subscription> <tenant> <client id> <secret> northeurope DS2v2 2 50
-#./play.sh aks
+./config.py aks-nuvolaris azure <subscription> <tenant> <client id> <secret> northeurope DS2v2 2 50
+./play.sh aks-nuvolaris
 ```
 
 # How to destroy the cluster
