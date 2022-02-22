@@ -91,7 +91,7 @@ Example:
 
 # Azure
 
-__Pre-requisites__
+**Pre-requisites**
 
 Create a service pricipal as explained [here](https://docs.microsoft.com/en-us/azure/developer/ansible/create-ansible-service-principal?tabs=azure-cli).
 Take note of the *password* fields in the output.
@@ -102,12 +102,26 @@ Get your *subscription_id*, *tenant* and *client_id* running these commands:
 az account show --query '{tenantId:tenantId,subscriptionid:id}'
 az ad sp list --display-name ansible --query '{clientId:[0].appId}'
 ```
+Create the cluster configuration and run the installation playbook, example:
+
+```
+./config.py aks azure <subscription> <tenant> <client id> <secret> northeurope DS2v2 2 50
+./play.sh aks
+```
+
+**NOTE** The cluster name must contain letters, numbers and hyphens only.
+
+Now you can control your cluster using:
+
+```
+./kc.sh aks <kubectl sub command>
+```
 Example:
 
 ```
-./config.py aks-nuvolaris azure <subscription> <tenant> <client id> <secret> northeurope DS2v2 2 50
-./play.sh aks-nuvolaris
+./kc.sh aks get nodes
 ```
+
 
 # How to destroy the cluster
 
