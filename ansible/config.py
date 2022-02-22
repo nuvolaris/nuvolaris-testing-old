@@ -183,6 +183,7 @@ vnet={vpc}
 instance_type={args.type}
 count={args.count}
 disk_size={args.disk}
+kube_config={os.getcwd()}/kubeconfig/{args.name}/kubeconfig
 """)
 # main
 

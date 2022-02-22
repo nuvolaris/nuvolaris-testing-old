@@ -14,3 +14,19 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
+- name: Remove AKS cluster and related resources
+  azure_rm_resourcegroup:
+    name: "{{cluster}}_rg"   
+    subscription_id: '{{ subscription_id }}'
+    client_id: '{{ client_id }}'
+    secret: '{{ secret }}'
+    tenant: '{{ tenant }}'
+    location: '{{ region }}'    
+    state: absent
+    force_delete_nonempty: true
+
+- name: Remove kubeconfig 
+  file: 
+    path: "{{kube_config | dirname}}"
+    state: absent

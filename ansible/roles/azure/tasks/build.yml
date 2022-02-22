@@ -78,16 +78,23 @@
     resource_group: "{{cluster}}_rg"
     dns_prefix: "{{cluster}}-cluster"
     kubernetes_version: 1.21.9
-    linux_profile:
-      admin_username: azureuser
-      ssh_key: "{{ ssh_key }}"
+    #linux_profile:
+    #  admin_username: azureuser
+    #  ssh_key: "{{ ssh_key }}"
     service_principal:
       client_id: "{{ client_id }}"
       client_secret: "{{ secret }}"
     agent_pool_profiles:
       - name: default
         mode: System
-        count: 1
+        count: "{{count}}"
         vm_size: "{{instance_type}}"
     tags:
       Environment: "{{cluster}}"
+  register: cluster
+
+- name: Create kubeconfig directory
+  file: path="{{kube_config | dirname}}" state=directory recurse=yes
+
+- name: Copy kubeconfig to local host
+  local_action: copy content="{{cluster.kube_config}}" dest="{{kube_config}}"
