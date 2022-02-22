@@ -97,4 +97,6 @@
   file: path="{{kube_config | dirname}}" state=directory recurse=yes
 
 - name: Copy kubeconfig to local host
-  local_action: copy content="{{cluster.kube_config}}" dest="{{kube_config}}"
+  copy:
+    content: "{{cluster.kube_config}}"
+    dest: "{{kube_config}}"
