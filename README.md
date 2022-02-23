@@ -94,7 +94,7 @@ Example:
 **Pre-requisites**
 
 Create a service pricipal as explained [here](https://docs.microsoft.com/en-us/azure/developer/ansible/create-ansible-service-principal?tabs=azure-cli).
-Take note of the *password* fields in the output.
+Take note of the *password* field in the output.
 
 Get your *subscription_id*, *tenant* and *client_id* running these commands:
 
