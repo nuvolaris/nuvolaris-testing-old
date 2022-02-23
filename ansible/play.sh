@@ -38,7 +38,7 @@ SCRIPT=${1:-$TYPE}
 shift
 
 ansible-playbook \
-  -i ./inventory/$INV \
+  -i inventory/$INV \
   --tags "$TAG" \
   "$@" \
-  "scripts/${SCRIPT##.yml}.yml" 
+  "scripts/${SCRIPT##.yml}.yml"
