@@ -40,6 +40,7 @@
 
 - import_tasks: kubeconfig.yml
   tags: ["kubeconfig"]
+  when: cluster_type != 'empty'
 
 - include_tasks: haproxy.yml
   tags: ["haproxy"]

@@ -37,6 +37,7 @@
     - python3-pip
     - python3-dev
     - python3-lxml
+    - python3-selinux
     - pkg-config
     - qemu-kvm
     - qemu-utils
@@ -46,6 +47,8 @@
     - virtinst
     - dnsmasq
     - ufw
+    - selinux-policy-default
+
 - name: install python libraries
   pip: state=present name={{item}}
   with_items:
@@ -64,7 +67,6 @@
     state: directory
     mode: 0755
 
-- name: download base image
-  get_url:
-    url: '{{image_url}}'
-    dest: "{{virt_dir}}/{{base_image}}"
+- name: Disable SELinux
+  ansible.posix.selinux:
+    state: disabled

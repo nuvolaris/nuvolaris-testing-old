@@ -1,0 +1,24 @@
+- name: "build host file"
+  lineinfile: 
+    dest: /etc/hosts 
+    regexp: '^{{ item }}.*$'
+    line: "{{item}} {{ hostvars[item].dns }} {{ hostvars[item].hostname }}"
+    state: present
+  loop: "{{groups['nodes']}}"
+
+- name: "build host file api"
+  lineinfile: 
+    dest: /etc/hosts 
+    regexp: '^{{ item }}.*$'
+    line: "{{hostvars[inventory_hostname]['ansible_default_ipv4']['address']}} api-int.{{ domain }} api.{{ domain }}"
+    state: present
+
+- name: "configure install"
+  template:
+    src: "install-config.yaml"
+    dest: "{{virt_dir}}/{{cluster}}/install-config.yaml"
+
+- name: generate ignition file
+  shell: >
+    /usr/local/okd/openshift-install create ignition-configs
+    --dir="{{virt_dir}}/{{cluster}}"

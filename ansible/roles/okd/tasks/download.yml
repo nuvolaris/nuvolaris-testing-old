@@ -1,0 +1,27 @@
+- file: path=/usr/local/okd state=directory
+
+- name:  download openshift-install
+  shell: >
+    URL="$(curl https://api.github.com/repos/openshift/okd/releases/latest | grep openshift-install-linux | grep browser_download_url | cut -d\" -f4)" ;
+    curl -sL "$URL" | tar xzvf - -C /usr/local/okd
+  args:
+    creates: /usr/local/okd/openshift-install
+  
+- name: download openshift-client
+  shell: >
+    URL="$(curl https://api.github.com/repos/openshift/okd/releases/latest | grep openshift-client-linux | grep browser_download_url | cut -d\" -f4)" ;
+    curl -sL "$URL" | tar xzvf - -C /usr/local/okd
+  args:
+    creates: /usr/local/okd/oc
+
+- name: cluster directory
+  file:
+    path: "{{virt_dir}}/{{cluster}}"
+    state: directory
+    mode: 0755
+
+- name: download base image
+  get_url:
+    url: '{{image_url}}'
+    dest: "{{virt_dir}}/{{base_image}}"
+

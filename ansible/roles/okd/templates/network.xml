@@ -17,22 +17,29 @@
   ~ under the License.
   ~
 -->
-<network>
-    <name>{{cluster}}</name>
-    <uuid>d0e9964a-f91a-40c0-b769-a609aee41bf2</uuid>
-    <forward mode='nat'>
-      <nat>
-        <port start='1024' end='65535'/>
-      </nat>
-    </forward>
-    <bridge name='virbr1' stp='on' delay='0' />
-    <mac address='{{subnet_mac}}:01'/>
-    <ip address='{{subnet}}.1' netmask='255.255.255.0'>
-      <dhcp>
-        <range start='{{subnet}}.10' end='{{subnet}}.99' />
-        {% for host in groups['nodes'] %}
-        <host mac='{{ hostvars[host].mac_addr }}' name='{{ hostvars[host].hostname }}' ip='{{host}}'/>
-        {% endfor %}
-      </dhcp>
-    </ip>
-  </network>
+<network connections='2'>
+  <name>{{cluster}}</name>
+  <uuid>b5d30777-17a5-4303-8a23-94fab8b21782</uuid>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <mac address='{{subnet_mac}}:01'/>
+  <dns>
+    {% for host in groups['nodes'] %}
+    <host ip='{{host}}'>
+      <hostname>{{hostvars[host].hostname}}.nip.io</hostname>
+    </host>
+    {% endfor %}
+  </dns>
+  <ip address='{{subnet}}.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='{{subnet}}.10' end='{{subnet}}.99' />
+      {% for host in groups['nodes'] %}
+      <host mac='{{ hostvars[host].mac_addr }}' name='{{ hostvars[host].hostname }}' ip='{{host}}'/>
+      {% endfor %}
+    </dhcp>
+  </ip>
+</network>
