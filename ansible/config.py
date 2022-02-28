@@ -29,11 +29,17 @@ params = {
      "base_image": "ubuntu-20.04",
      "kube_port": "16443",
   }, 
+  "empty": { 
+     "image_url": "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img",
+     "os_variant": "ubuntu20.04",
+     "base_image": "ubuntu-20.04",
+     "kube_port": "6443",
+  }, 
   "okd": {
     "image_url": "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/35.20220103.3.0/x86_64/fedora-coreos-35.20220103.3.0-qemu.x86_64.qcow2.xz",
     "os_variant": "fedora-unknown",
     "base_image": "fedora-coreos35",
-     "kube_port": "6443",
+    "kube_port": "6443",
   },
   "k3s": {
     "image_url": "https://download.rockylinux.org/pub/rocky/8.5/images/Rocky-8-GenericCloud-8.5-20211114.2.x86_64.qcow2",
@@ -63,7 +69,7 @@ def write_file(filename, content):
 
 # kvm
 
-def header(cluster, cluster_type, pub_key, priv_key):
+def header(cluster, cluster_type, pub_key, priv_key, domain, count):
   # geneate random token to join kubernetes
   kube_token = ''.join(random.choices(string.hexdigits[:16], k=32))
   with open(pub_key, "r") as f:
@@ -84,6 +90,9 @@ kube_master={subnet}.10
 kube_port={params[cluster_type]['kube_port']}
 kube_token={kube_token}
 kube_config={os.getcwd()}/kubeconfig/{cluster}/kubeconfig
+domain={domain}
+count={count}
+
 """
 
 def inventory(cluster, server, count, disk, mem, cpu):
@@ -92,7 +101,33 @@ def inventory(cluster, server, count, disk, mem, cpu):
   hosts += "\n[nodes]\n"
   for n in range(count):
     vcpu = 2 if n == 0 and cpu == 1 else cpu
-    hosts += f"{subnet}.{10+n} id={n} hostname={cluster}{n} mac_addr={subnet_mac}:{10+n} disk_size={disk} mem_size={mem} vcpu_num={vcpu}\n"
+    ip = f"{subnet}.{10+n}"
+    hosts += f"{ip} id={n} hostname={cluster}{n} mac_addr={subnet_mac}:{10+n} disk_size={disk} mem_size={mem} vcpu_num={vcpu}\n"
+  return hosts
+
+def inventory_okd(cluster, server, count, disk, mem, cpu):
+  hosts = "[server]\n"
+  hosts += f"{server} cluster={cluster} subnet={subnet} subnet_mac={subnet_mac} nodes_count={count}\n"
+  hosts += "\n[nodes]\n"
+  for n in range(count+1):
+    vcpu = 2 if n == 0 and cpu == 1 else cpu
+    id = n
+    if n == 0: 
+      hostname = "master"
+      ignition = "master.ign"
+    elif n == count:
+      id = 89 
+      hostname = "bootstrap"
+      ignition = "bootstrap.ign"
+    else: 
+      hostname = f"worker{n}"
+      ignition = "worker.ign"
+    
+    ip = f"{subnet}.{10+id}"
+    mac = f"{subnet_mac}:{10+id}"
+    dns = f"{hostname}-{ip.replace('.','-')}.nip.io"
+    hosts += f"{ip} id={id} hostname={hostname} ip={ip} dns={dns} mac_addr={mac} disk_size={disk} mem_size={mem} vcpu_num={vcpu} ignition={ignition}\n"
+  
   return hosts
 
 # kvm
@@ -100,7 +135,7 @@ def kvm():
   parser = argparse.ArgumentParser("configure")
   parser.add_argument("name", help="name of cluster")
   parser.add_argument("cloud", help="cloud type")
-  parser.add_argument("ktype", help="kube type", choices=["microk8s", "okd"])
+  parser.add_argument("ktype", help="kube type", choices=["microk8s", "empty"])
   parser.add_argument("server", help="hostname of server")
   parser.add_argument("priv_key", help="private key file")
   parser.add_argument("pub_key", help="public key file")
@@ -111,7 +146,7 @@ def kvm():
   args = parser.parse_args()
   write_file(f"inventory/{args.name}.type", "kvm")
   write_file(f"inventory/{args.name}/hosts", 
-    header(args.name, args.ktype, args.pub_key, args.priv_key) + inventory(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
+    header(args.name, args.ktype, args.pub_key, args.priv_key, "no.domain", args.count) + inventory(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
 
 # aws
 def aws():
@@ -146,6 +181,7 @@ def okd():
   parser.add_argument("server", help="hostname of server")
   parser.add_argument("priv_key", help="private key file")
   parser.add_argument("pub_key", help="public key file")
+  parser.add_argument("domain", help="domain of cluster")
   parser.add_argument("count", type=int, help="number of nodes")
   parser.add_argument("disk", type=int, help="disk size in gigabytes of each node")
   parser.add_argument("mem", type=int, help="memory size in gigabytes of each node")
@@ -154,7 +190,7 @@ def okd():
 
   write_file(f"inventory/{args.name}.type", "okd")
   write_file(f"inventory/{args.name}/hosts",
-    header(args.name, "okd", args.pub_key, args.priv_key) + inventory(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
+    header(args.name, "okd", args.pub_key, args.priv_key, args.domain, args.count) + inventory_okd(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
 
 # azure
 def azure():
@@ -185,8 +221,8 @@ count={args.count}
 disk_size={args.disk}
 kube_config={os.getcwd()}/kubeconfig/{args.name}/kubeconfig
 """)
-# main
 
+# main
 def main():
     if len(sys.argv) > 2:
       if sys.argv[2] == "kvm":
@@ -200,4 +236,4 @@ def main():
     print("usage: <name> [kvm|aws|okd|azure] ... (use the subcommand for details) ") 
 
 if __name__ == "__main__":
-    main()
+  main()

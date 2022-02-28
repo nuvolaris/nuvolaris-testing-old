@@ -1,3 +1,4 @@
+#cloud-config
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,13 +16,21 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-#cloud-config
-chpasswd:
-  list: |
-    root:passw0rd
-  expire: False
+apt_update: true
+apt_upgrade: true
+package_update: true
+package_upgrade: true
+package_reboot_if_required: false
 ssh_pwauth: True
-ssh_authorized_keys:
-  - {{ssh_authorized_key}}
 bootcmd:
-  - echo "set ssh key for okd"
+- echo "boot $(uname -a) complete"
+
+users:
+  - name: root
+    ssh_authorized_keys:
+      - {{ssh_authorized_key}}
+  - name: nuvolaris
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: sudo
+    ssh_authorized_keys:
+      - "{{ssh_authorized_key}}"

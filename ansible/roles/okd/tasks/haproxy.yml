@@ -18,10 +18,14 @@
 - name: install haproxy
   apt: name=haproxy
 
+- debug:
+    msg="{{hostvars[item]}}"
+  loop: "{{groups['nodes']}}"
+
 - name: configure haproxy
   template:
     src: "haproxy.cfg"
     dest: "/etc/haproxy/haproxy.cfg"
 
-- name: start haproxy
-  service: name="haproxy" state=started enabled=yes
+# - name: start haproxy
+#   service: name="haproxy" state=started enabled=yes

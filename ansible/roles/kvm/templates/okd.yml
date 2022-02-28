@@ -18,7 +18,7 @@
 #cloud-config
 chpasswd:
   list: |
-     root:passw0rd
+    root:passw0rd
   expire: False
 ssh_pwauth: True
 ssh_authorized_keys:

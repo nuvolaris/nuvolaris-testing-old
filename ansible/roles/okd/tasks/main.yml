@@ -16,28 +16,34 @@
 # under the License.
 #
 
-# - import_tasks: prereq.yml
-#   tags: ["prereq"]
+#- debug: 
+#    msg: '{{ lookup("template", "network.xml") }}'
 
-# - import_tasks: network.yml
-#   tags: ["network"]
+- include_tasks: 
+    file: clean.yml
+    apply:
+      tags: ["clean"]
+  loop: "{{groups['nodes']}}"
+  tags: ["never", "clean"]
 
-# - include_tasks: 
-#     file: vms.yml
-#     apply:
-#       tags: ["vms"]
-#   loop: "{{groups['nodes']}}"
-#   tags: ["vms"]
+- import_tasks: prereq.yml
+  tags: ["prereq"]
+
+- import_tasks: network.yml
+  tags: ["network"]
+
+- import_tasks: haproxy.yml
+  tags: ["haproxy"]
+
+- import_tasks: download.yml
+  tags: ["download"]
+
+- import_tasks: config.yml
+  tags: ["config"]
+
+#- import_tasks: vms.yml
+#  tags: ["vms"]
+
 
 # - import_tasks: kubeconfig.yml
 #   tags: ["kubeconfig"]
-
-# - include_tasks: haproxy.yml
-#   tags: ["haproxy"]
-
-- import_tasks: a.yml
-  tags: ["never", "a"]
-- import_tasks: b.yml
-  tags: ["b"]
-- import_tasks: c.yml
-  tags: ["c"]
