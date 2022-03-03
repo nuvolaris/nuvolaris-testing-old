@@ -192,16 +192,48 @@ def okd():
   write_file(f"inventory/{args.name}/hosts",
     header(args.name, "okd", args.pub_key, args.priv_key, args.domain, args.count) + inventory_okd(args.name, args.server, args.count, args.disk, args.mem, args.cpu))
 
+# azure
+def azure():
+  parser = argparse.ArgumentParser("configure")
+  parser.add_argument("name", help="name of cluster")
+  parser.add_argument("cloud", help="cloud type")
+  parser.add_argument("subscription", help="subscription id")
+  parser.add_argument("tenant", help="tenant id")
+  parser.add_argument("key", help="service pricipal client id")
+  parser.add_argument("secret", help="service principal secret")
+  parser.add_argument("region", help="azure region")
+  parser.add_argument("type", help="worker instance type")
+  parser.add_argument("count", type=int, help="number of workers")
+  parser.add_argument("disk", type=int, help="disk size in gigabytes of each node")
+  
+  args = parser.parse_args()
+  write_file(f"inventory/{args.name}.type", "azure")
+  write_file(f"inventory/{args.name}/hosts", f"""[all:vars]
+cluster={args.name}
+subscription_id={args.subscription}
+tenant={args.tenant}
+client_id={args.key}
+secret={args.secret}
+region={args.region}
+vnet={vpc}
+instance_type={args.type}
+count={args.count}
+disk_size={args.disk}
+kube_config={os.getcwd()}/kubeconfig/{args.name}/kubeconfig
+""")
+
 # main
 def main():
-  if len(sys.argv) > 2:
-    if sys.argv[2] == "kvm":
-      return kvm()
-    if sys.argv[2] == "aws":
-      return aws()
-    if sys.argv[2] == "okd":
-      return okd()
-  print("usage: <name> [kvm|aws|okd] ... (use the subcommand for details)")
+    if len(sys.argv) > 2:
+      if sys.argv[2] == "kvm":
+        return kvm()
+      if sys.argv[2] == "aws":
+        return aws()
+      if sys.argv[2] == "azure":
+        return azure()            
+      if sys.argv[2] == "okd":
+        return okd()
+    print("usage: <name> [kvm|aws|okd|azure] ... (use the subcommand for details) ") 
 
 if __name__ == "__main__":
   main()
