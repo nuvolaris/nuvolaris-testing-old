@@ -49,3 +49,14 @@ tasks:
     dir: ./tests
     cmds:
       - jest nodejs-testing
+
+  test-nuv:
+    cmds:
+      - echo "Downloading nuv ${NUV_VERSION}..."
+      - mkdir -p /tmp_nuv
+      - cd /tmp_nuv
+      - wget "https://github.com/nuvolaris/nuvolaris-cli/releases/download/${NUV_VERSION}/nuv-${NUV_VERSION}-linux-amd64.tar.gz"
+      - tar xzvf "nuv-${NUV_VERSION}-linux-amd64.tar.gz"
+      - ./nuv setup --devcluster
+      - ./nuv wsk action update hi hi.js
+      - ./nuv wsk action invoke hi -r | grep hi
