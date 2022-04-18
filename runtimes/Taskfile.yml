@@ -15,9 +15,28 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-.*-version
-private/ansible/inventory/*
-private/ansible/kubeconfig/*
-node_modules/
-misc/
-_*
+version: '3'
+
+tasks:
+    
+  pull-all: # cmd to pull all runtimes
+    cmds: 
+      - docker pull openwhisk/action-nodejs-v14:latest 
+
+  pull-nodejs-runtime: # cmd to pull only nodejs runtime if we want to run tests for only that
+    cmds:
+      - docker pull openwhisk/action-nodejs-v14:latest 
+
+  test-all:
+    deps:
+      - pull-all
+    dir: ./tests
+    cmds:
+      - jest
+
+  test-nodejs:
+    deps:
+      - pull-nodejs-runtime
+    dir: ./tests
+    cmds:
+      - jest nodejs-testing
