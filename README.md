@@ -24,20 +24,8 @@ This repo includes our test suite and the scripts to build our test environments
 You can discuss it in the #[nuvolaris-testing](https://discord.gg/sgXqn9we) discord channel and in the forum under the category [testing](https://github.com/nuvolaris/nuvolaris/discussions/categories/testing).
 
 
-Check [this developer guide](DEVEL.md) for informations how to improve it.
 
 
-# How to build a test cluster in a physical server running Kubernetes
-
-Steps to follow, see below for an example:
-
-Get a remote server running Ubuntu 20.04, say `test.server` You need at least 64gb of memory and 8 cores. 
-
-1. Change to `ansible` and generate a ssh keypair in `inventory/id_rsa`  
-2. Copy the public and private key to access the server without password
-3. Generate a configuration running ./config.py, see below for the parameters
-4. run `./play.sh <cluster>`
-5. access to the server with Kubernetes in it with `kubectl --kubeconfig kubeconfig`
 
 
 ## Advanced use

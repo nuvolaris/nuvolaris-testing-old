@@ -15,12 +15,11 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-.*-version
-private/ansible/inventory/*
-private/ansible/kubeconfig/*
-node_modules/
-misc/
-_*
-.env
-id_rsa
-id_rsa.pub
+version: '3'
+tasks:
+
+  create:
+    - juju bootstrap aws --constraints arch=amd64
+    - juju list-controllers
+    - juju add-model aws
+    - juju deploy charmed-kubernetes

@@ -15,12 +15,16 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-.*-version
-private/ansible/inventory/*
-private/ansible/kubeconfig/*
-node_modules/
-misc/
-_*
-.env
-id_rsa
-id_rsa.pub
+version: '3'
+
+tasks:
+
+  create: eksctl create cluster -f eks-cluster.yml 
+
+  destroy: eksctl delete cluster --name nuvolaris-cluster --region=eu-central-1
+
+  list: eksctl get cluster
+
+  config: |-
+    aws eks update-kubeconfig --kubeconfig ~/.kube/config --name=nuvolaris-cluster
+    kubectl get nodes

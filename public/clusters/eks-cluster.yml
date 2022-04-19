@@ -15,12 +15,17 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-.*-version
-private/ansible/inventory/*
-private/ansible/kubeconfig/*
-node_modules/
-misc/
-_*
-.env
-id_rsa
-id_rsa.pub
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: nuvolaris-cluster
+  region: eu-central-1
+
+nodeGroups:
+  - name: ng-1
+    instanceType: m5.large
+    desiredCapacity: 1
+    volumeSize: 80
+    ssh:
+      publicKeyPath: ../../config/id_rsa.pub

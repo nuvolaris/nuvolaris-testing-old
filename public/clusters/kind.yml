@@ -15,12 +15,16 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-.*-version
-private/ansible/inventory/*
-private/ansible/kubeconfig/*
-node_modules/
-misc/
-_*
-.env
-id_rsa
-id_rsa.pub
+version: '3'
+
+tasks:
+
+  create: kind create cluster --wait=1m --name=nuvolaris --config=kind-config.yaml
+
+  destroy: kind delete cluster --name nuvolaris
+
+  list: kind get clusters
+
+  config: |-
+    kind get kubeconfig --name=nuvolaris >~/.kube/config
+    kubectl get nodes
